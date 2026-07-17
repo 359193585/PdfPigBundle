@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Avalonia.Controls"
+        xmlns:vm="using:PdfPigBundle.ViewModel"
+        x:Class="PdfMergerApp.Views.MainWindow"
+        x:CompileBindings="False"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDF 合并工具"
+        Width="800" Height="600"
+        DragDrop.AllowDrop="True"
+        DragDrop.DragOver="OnDragOver"
+        DragDrop.Drop="OnDrop">
+
+    <Grid Margin="10" RowDefinitions="Auto,*,Auto,Auto,Auto">
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5" Margin="0,0,0,10">
+            <Button Content="添加文件"
+                    HorizontalContentAlignment ="Center"
+                    Click="OnAddFilesClicked" />
+            <Button Content="清空列表" 
+                    HorizontalContentAlignment ="Center"
+                    Command="{Binding ClearListCommand}" />
+            <Button Content="上移" 
+                    HorizontalContentAlignment ="Center"
+                    Command="{Binding MoveUpCommand}" />
+            <Button Content="下移" 
+                    HorizontalContentAlignment ="Center"
+                    Command="{Binding MoveDownCommand}" />
+            <Button Content="删除选中"
+                    HorizontalContentAlignment ="Center"
+                    Command="{Binding RemoveSelectedCommand}" />
+        </StackPanel>
+
+        <!-- 文件列表 -->
+        <DataGrid Grid.Row="1" 
+                  x:Name="FileDataGrid"
+                  ItemsSource="{Binding FileItems}"
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                  IsReadOnly="True" 
+                  AutoGenerateColumns="False"
+                  SelectionMode="Single"
+                  CanUserReorderColumns="False"
+                  CanUserSortColumns="False"
+                  Margin="0,0,0,10">
+        </DataGrid>
+
+        <!-- 输出路径 -->
+       <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,10">
+           <TextBlock Text="输出路径：" VerticalAlignment="Center" Margin="0,0,5,0" />
+           <TextBox Grid.Column="1" Text="{Binding OutputPath}" IsReadOnly="True" />
+           <Button Grid.Column="2" Content="浏览..." Click="OnBrowseOutputClicked" Margin="5,0,5,0" />
+           <Button Grid.Column="3" Content="📁 打开文件夹" Click="OnOpenFolderClicked" />
+       </Grid>
+
+        <!-- 进度条与状态 -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
+            <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" Height="20" />
+            <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,5,0,0" />
+        </Grid>
+
+        <!-- 合并按钮 -->
+        <Button Grid.Row="4" Content="开始合并" HorizontalAlignment="Center" 
+                HorizontalContentAlignment ="Center"
+                Width="120"
+                Command="{Binding MergeCommand}" IsEnabled="{Binding CanMerge}" />
+    </Grid>
+</Window>

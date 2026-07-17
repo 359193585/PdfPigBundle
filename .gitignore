@@ -1,0 +1,43 @@
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+*.cache
+*.cachefile
+
+
+## Build outputs
+bin/
+obj/
+scripts/
+publish/
+release/
+*.exe
+*.dll
+*.pdb
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.ide
+
+## Others
+*.log
+*.tmp
+Thumbs.db
+
+*.bak
+*.swp
+make_release_1.ps1
+.DS_Store
+*.DS_Store
+
+
+
+
+
+
+
