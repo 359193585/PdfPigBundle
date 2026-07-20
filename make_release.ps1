@@ -4,12 +4,16 @@
 #   或者修改脚本，使得它符合你当前的 PowerShell 版本
 #
 
-# 添加项目名称变量, 发布程序名和项目路径，均依据此值
-$PROJ_NAME = "PdfPigBundle"
+# 项目文件夹名
+$PROJ_FOLDER = "PdfPigBundle"
 
+# 发布产物名称（用户看到的名称）
+$PROJ_NAME = "PDFMerger"
+
+# 版本号文件
+$patchFile = Resolve-Path "version_patch.txt" -ErrorAction SilentlyContinue
 
 # 1. 读取和写入 Patch 号 (防止 PS7 文件锁)
-$patchFile = Resolve-Path "version_patch.txt" -ErrorAction SilentlyContinue
 $patch = 0
 if ($patchFile -and (Test-Path $patchFile)) {
     $patch = [int]([System.IO.File]::ReadAllText($patchFile).Trim())
@@ -41,7 +45,7 @@ foreach ($rid in $runtimes) {
         Write-Host "`n=== 正在发布 $rid ===" -ForegroundColor Cyan
     # 4.1 定义输出文件夹
         $baseFolder    = "$PROJ_NAME.$version.$rid"
-        $bundledFolder = "$baseFolder-bundled"
+        $bundledFolder = "$PROJ_NAME.$version.$rid-bundled"
         $baseOutput    = "publish\$baseFolder"
         $bundledOutput = "publish\$bundledFolder"
         $baseZip       = "publish\$baseFolder.zip"
@@ -49,7 +53,7 @@ foreach ($rid in $runtimes) {
 
     # 4.2 准备基础参数
         $baseArgs = @(
-            "publish", ".\$PROJ_NAME\$PROJ_NAME.csproj", 
+            "publish", ".\$PROJ_FOLDER\$PROJ_FOLDER.csproj", 
             "-c", "Release", 
             "-r", $rid,
             "-p:Version=$version",
@@ -102,3 +106,5 @@ foreach ($rid in $runtimes) {
       #      --title "$PROJ_NAME $version" `
       #      --notes "Release of $PROJ_NAME $version with both self-contained and dependent builds."
 }
+
+Write-Host "`n=== 所有平台发布完成 ===" -ForegroundColor Green

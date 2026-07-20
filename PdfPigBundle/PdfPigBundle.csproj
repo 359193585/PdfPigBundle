@@ -6,6 +6,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 	  <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+      <AssemblyName>PDFMerger</AssemblyName>
+      
   </PropertyGroup>
 	
 	
