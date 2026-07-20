@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using PdfPigBundle.Models;
 using PdfPigBundle.Service;
-using UglyToad.PdfPig;
-
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 
 namespace PdfPigBundle.ViewModel
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        //private readonly MergePdfFiles _merger = new MergePdfFiles();
         private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
         public event EventHandler<string> ShowMessageRequested;
 
@@ -132,10 +131,10 @@ namespace PdfPigBundle.ViewModel
                         var item = new FileItem { FilePath = path, FileName = Path.GetFileName(path) };
                         try
                         {
-                            using (var doc = PdfDocument.Open(path))
+                            using (var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import))
                             {
-                                item.PageCount = doc.NumberOfPages;
-                                item.Author = doc.Information?.Author ?? "";
+                                item.PageCount = doc.PageCount;
+                                item.Author = doc.Info.Author ?? "";
                             }
                             var fi = new FileInfo(path);
                             item.FileSize = fi.Length;

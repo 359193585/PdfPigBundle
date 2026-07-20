@@ -31,14 +31,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
-    <PackageReference Include="PdfPig" Version="0.1.15" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Views\MainWindowOld.axaml.cs">
-      <DependentUpon>MainWindowOld.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
