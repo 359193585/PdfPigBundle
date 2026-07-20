@@ -94,6 +94,8 @@ namespace PdfPigBundle.Views
                 }
             }
         }
+
+        // ---------- 关于  ----------
         private async void OnAboutClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await App.ShowAboutDialogAsync();
@@ -138,7 +140,7 @@ namespace PdfPigBundle.Views
                     return;
                 }
 
-                var directory = System.IO.Path.GetDirectoryName(vm.OutputPath);
+                var directory = Path.GetDirectoryName(vm.OutputPath);
                 if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
                 {
                     var box = MessageBoxManager.GetMessageBoxStandard("提示", "输出目录不存在。");

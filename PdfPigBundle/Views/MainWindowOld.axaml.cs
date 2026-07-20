@@ -1,5 +1,6 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
+using PdfPigBundle.Models;
 using PdfPigBundle.Service;
 using System;
 using System.Linq;

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+//FileItem.cs
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace PdfPigBundle.Models

@@ -1,8 +1,5 @@
 // MainWindowViewMode.cs
-using PdfPigBundle.Models;
-using PdfPigBundle.Service;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -10,13 +7,17 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using PdfPigBundle.Models;
+using PdfPigBundle.Service;
 using UglyToad.PdfPig;
+
 
 namespace PdfPigBundle.ViewModel
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private readonly MergePdfFiles _merger = new MergePdfFiles();
+        //private readonly MergePdfFiles _merger = new MergePdfFiles();
+        private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
         public event EventHandler<string> ShowMessageRequested;
 
         public ObservableCollection<FileItem> FileItems { get; } = new ObservableCollection<FileItem>();
@@ -304,9 +305,18 @@ namespace PdfPigBundle.ViewModel
                     });
                 });
 
-                var result = await Task.Run(() =>
-                    _merger.Merge(filePaths, OutputPath, ignoreDuplicates: false, progress)
-                );
+                //var result = await Task.Run(() =>
+                //    _merger.Merge(filePaths, OutputPath, ignoreDuplicates: false, progress)
+                //);
+
+                var options = new MergeOptions
+                {
+                    IgnoreDuplicates = false,
+                    Progress = progress,
+                    BookmarkGenerator = new SimpleBookmarkGenerator() // 实现 IBookmarkGenerator 接口的类，用于生成书签
+                };
+                var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
+
 
                 if (result.Success)
                 {
