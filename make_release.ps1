@@ -23,7 +23,7 @@ $patch++
 
 # 2. 版本号定义
 $major = 1
-$minor = 0
+$minor = 1
 $version = "$major.$minor.$patch"
 $assemblyVersion = "$major.$minor.$patch.0"
 
