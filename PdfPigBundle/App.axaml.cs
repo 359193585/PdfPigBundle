@@ -33,10 +33,10 @@ namespace PdfPigBundle
         private static WindowIcon GetPlatformIcon()
         {
             string iconPath = OperatingSystem.IsWindows()
-                ? "avares://PdfPigBundle/Assets/icon.ico"
+                ? "avares://PDFMerger/Assets/icon.ico"
                 : OperatingSystem.IsMacOS()
-                ? "avares://PdfPigBundle/Assets/icon.png"
-                : "avares://PdfPigBundle/Assets/icon.png";
+                ? "avares://PDFMerger/Assets/icon.png"
+                : "avares://PDFMerger/Assets/icon.png";
 
             var uri = new Uri(iconPath);
             using var stream = AssetLoader.Open(uri);

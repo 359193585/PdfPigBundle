@@ -21,7 +21,7 @@
         
         <!-- 图标 -->
         <Image Grid.Row="0"
-               Source="avares://PdfPigBundle/Assets/icon.png"
+               Source="avares://PDFMerger/Assets/icon.png"
                Width="48"
                Height="48"
                HorizontalAlignment="Center"
