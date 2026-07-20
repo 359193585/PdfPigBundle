@@ -1,15 +1,16 @@
+using System;
+using System.IO;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia;
 using PdfPigBundle.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace PdfMergerApp.Views
+namespace PdfPigBundle.Views
 {
     public partial class MainWindow : Window
     {
@@ -54,7 +55,7 @@ namespace PdfMergerApp.Views
                 Width = new DataGridLength(1.5, DataGridLengthUnitType.Star)
             });
         }
-        // ---------- 添加文件（按钮事件） ----------
+        // ---------- 添加文件 ----------
         private async void OnAddFilesClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -73,7 +74,7 @@ namespace PdfMergerApp.Views
             }
         }
 
-        // ---------- 浏览输出路径（按钮事件） ----------
+        // ---------- 浏览输出路径  ----------
         private async void OnBrowseOutputClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var folder = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -93,6 +94,10 @@ namespace PdfMergerApp.Views
                 }
             }
         }
+        private async void OnAboutClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            await App.ShowAboutDialogAsync();
+        }
 
         // ---------- 拖放（DragOver） ----------
         private void OnDragOver(object sender, DragEventArgs e)
@@ -105,7 +110,7 @@ namespace PdfMergerApp.Views
         }
 
         // ---------- 拖放（Drop） ----------
-        private async void OnDrop(object sender, DragEventArgs e)
+        private void OnDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
             if (e.DataTransfer.Formats.Contains(DataFormat.File))

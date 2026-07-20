@@ -1,4 +1,4 @@
-﻿// MainWindowViewMode.cs
+// MainWindowViewMode.cs
 using PdfPigBundle.Models;
 using PdfPigBundle.Service;
 using System;
@@ -60,6 +60,8 @@ namespace PdfPigBundle.ViewModel
         public ICommand MoveUpCommand { get; }
         public ICommand MoveDownCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
+        public ICommand AboutCommand { get; }
+
         public ICommand MergeCommand { get; }
 
         public  static string DefaultOutputPdfName = "outputOfMerge.pdf";
@@ -69,6 +71,9 @@ namespace PdfPigBundle.ViewModel
             MoveUpCommand = new RelayCommand(MoveUp, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) > 0);
             MoveDownCommand = new RelayCommand(MoveDown, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) < FileItems.Count - 1);
             RemoveSelectedCommand = new RelayCommand(RemoveSelected, () => SelectedItem != null);
+
+            AboutCommand = new RelayCommand(async () => await App.ShowAboutDialogAsync());
+
             MergeCommand = new RelayCommand(async () => await MergePdfs(), () => FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath));
 
             FileItems.CollectionChanged += (s, e) =>
