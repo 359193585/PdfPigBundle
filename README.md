@@ -49,7 +49,62 @@
 4. 合并完成后，可打开输出文件所在文件夹。
 
 
+# 📦 下载与安装
+## 预编译包
+- 前往 Releases 页面下载适合您系统的压缩包：
 
+  - PdfMerger-win-x64.zip – Windows 64位
+
+  - PdfMerger-osx-x64.zip – macOS Intel
+
+  - PdfMerger-osx-arm64.zip – macOS Apple Silicon
+
+  - PdfMerger-linux-x64.zip – Linux 64位
+
+  - PdfMerger-linux-arm64.zip – Linux ARM64 (信创设备)
+
+- 解压后，直接双击 PdfMerger 即可运行（Linux/macOS 可能需要授予执行权限）。
+
+# 🛠️ 开发者指南
+## 环境要求
+- .NET SDK 8.0 或更高版本
+
+- Avalonia UI 框架
+
+- 构建 使用项目的powershell脚本和wsl 虚拟机的 shell脚本
+
+## 🤝 贡献
+- 欢迎提出 Issue 或 Pull Request。
+
+- 报告 Bug 请附上系统信息和复现步骤。
+
+- 希望新增功能或改进，请先开 Issue 讨论。
+
+## 📄 许可证
+本项目采用 MIT 许可证，允许自由使用、修改、分发，包括商业用途。
+
+## 🧩 技术栈
+Avalonia UI – 跨平台 .NET GUI 框架
+
+PDFsharp – PDF 处理核心
+
+.NET 8 – 运行时与 SDK
+
+# ❓ FAQ
+Q: 合并后的 PDF 目录书签无法在 Chrome 或 Edge 浏览器中显示？
+A: 部分浏览器可能不支持 PDF 书签，请使用 Adobe Acrobat Reader 或 PDF Expert 等专业阅读器查看。
+
+Q: 可以合并加密的 PDF 吗？
+A: 目前不支持加密 PDF，未来可能加入密码输入功能。
+
+Q: 软件需要联网吗？
+A: 完全离线，无需联网，不会上传任何文件。
+
+Q: 为什么我的 Apple Silicon Mac 无法运行？
+A: 请下载 -osx-arm64 版本，确保您使用的是对应架构的包。
+
+📧 联系
+如有商务合作或定制需求，请通过 GitHub Issues 联系。
 
 
 # 注意 Note：
