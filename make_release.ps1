@@ -39,7 +39,7 @@ Write-Host "=== 发布 $PROJ_NAME $version ===" -ForegroundColor Green
     #$runtimes = @( "linux-x64")
     # $runtimes = @( "linux-x64", "linux-arm64")
     # $runtimes = @("win-x64", "linux-x64", "linux-arm64","osx-arm64")
-    $runtimes = @("win-x64", "linux-x64", "linux-arm64","osx-x64","osx-arm64")
+     $runtimes = @("win-x64", "linux-x64", "linux-arm64","osx-x64","osx-arm64")
 
 foreach ($rid in $runtimes) {
         Write-Host "`n=== 正在发布 $rid ===" -ForegroundColor Cyan
@@ -90,9 +90,92 @@ foreach ($rid in $runtimes) {
         Write-Host "开始发布 Bundled 版..." -ForegroundColor Cyan
         dotnet @bundledLaunchArgs
 
+
+         # ==========  为 Linux 添加 .desktop 文件和图标 ==========
+    if ($rid -like "linux-*") {
+        # 复制 .desktop 文件
+        $desktopSource = "$PROJ_FOLDER\BuildAssets\Linux\PDFMerger.desktop"
+        if (Test-Path $desktopSource) {
+            Copy-Item $desktopSource -Destination $baseOutput -Force
+            Copy-Item $desktopSource -Destination $bundledOutput -Force
+            Write-Host "已复制 PDFMerger.desktop 到 Linux 发布目录" -ForegroundColor Yellow
+        } else {
+            Write-Host "警告: 未找到 PDFMerger.desktop 文件，Linux 桌面集成将不完整。" -ForegroundColor Red
+        }
+
+        # 复制图标文件（使用 Assets/icon.png）
+        $iconSource = "$PROJ_FOLDER\Assets\icon.png"
+        if (Test-Path $iconSource) {
+            Copy-Item $iconSource -Destination "$baseOutput\icon.png" -Force
+            Copy-Item $iconSource -Destination "$bundledOutput\icon.png" -Force
+            Write-Host "已复制 icon.png 到 Linux 发布目录" -ForegroundColor Yellow
+        } else {
+            Write-Host "警告: 未找到 Assets\icon.png，Linux 图标可能无法显示。" -ForegroundColor Red
+        }
+    }
+    # ==========================================================
+
+
     # 4.4 打包 ZIP
+    if ($rid -like "win-*") {
         Compress-Archive -Path "$baseOutput\*" -DestinationPath $baseZip -Force
         Compress-Archive -Path "$bundledOutput\*" -DestinationPath $bundledZip -Force
+    }
+
+   if ($rid -like "linux-*") {
+        Write-Host "使用 tar 打包 Linux 版本（保留权限）..." -ForegroundColor Cyan
+
+        # 1. 定义 tar 输出文件名
+        $baseTar = "$baseOutput.tar.gz"
+        $bundledTar = "$bundledOutput.tar.gz"
+
+        # 2. 转换路径为 WSL 风格
+        $wslBaseOutput = $baseOutput -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+        $wslBundledOutput = $bundledOutput -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+        $wslBaseTar = $baseTar -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+        $wslBundledTar = $bundledTar -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+
+        # 3. 设置执行权限
+        wsl chmod +x "$wslBaseOutput/PDFMerger"
+        wsl chmod +x "$wslBundledOutput/PDFMerger"
+        wsl chmod +x "$wslBaseOutput/PDFMerger.desktop"
+        wsl chmod +x "$wslBundledOutput/PDFMerger.desktop"
+
+        # 4. 打包为 .tar.gz（保留权限）
+        wsl tar -czf "$wslBaseTar" -C "$wslBaseOutput" .
+        wsl tar -czf "$wslBundledTar" -C "$wslBundledOutput" .
+
+        # 5. 删除未打包的目录
+        Remove-Item -Recurse -Force $baseOutput, $bundledOutput
+
+        Write-Host "✅ 已生成: $baseTar 和 $bundledTar" -ForegroundColor Green
+    }
+
+    if ($rid -like "osx-*") {
+       Write-Host "`n=== 正在调用 macOS 打包脚本 ===" -ForegroundColor Cyan
+
+       #  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
+       $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+       $drive = $ScriptDir[0].ToString().ToLower()
+       $wslScriptDir = "/mnt/$drive" + $ScriptDir.Substring(2) -replace '\\', '/'
+       Write-Host "项目根目录 (WSL): $wslScriptDir"
+
+       # 确保 PackageMacApp.sh 有执行权限（在 WSL 中）
+       wsl chmod +x "$wslScriptDir/PackageMacApp.sh" 2>$null
+
+        # 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
+        wsl bash -c "cd '$wslScriptDir' && ./PackageMacApp.sh $version"
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "⚠️ macOS 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
+        } else {
+            Write-Host "✅ macOS 打包完成" -ForegroundColor Green
+            #  删除未打包的目录
+            Remove-Item -Recurse -Force $baseOutput, $bundledOutput
+        }
+    }
+
+
 
     # 4.5 GitHub Release
       # Write-Host "发布到 github ..." -ForegroundColor Cyan
