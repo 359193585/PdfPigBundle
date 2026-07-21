@@ -29,6 +29,12 @@
             <Button Content="删除选中"
                     HorizontalContentAlignment ="Center"
                     Command="{Binding RemoveSelectedCommand}" />
+
+           <CheckBox Content="文件去重"
+                     IsChecked="{Binding EnableAddDuplicateCheck}"
+                     VerticalAlignment="Center"
+                     Margin="10,0,0,0" />
+
             <Button Content="关于"
                     Margin="20,0,0,0"
                     HorizontalContentAlignment ="Center"

@@ -58,6 +58,13 @@ namespace PdfPigBundle.ViewModel
             set => SetProperty(ref _selectedItem, value);
         }
 
+        private bool _enableAddDuplicateCheck = true;
+        public bool EnableAddDuplicateCheck
+        {
+            get => _enableAddDuplicateCheck;
+            set => SetProperty(ref _enableAddDuplicateCheck, value);
+        }
+
         public ICommand ClearListCommand { get; }
         public ICommand MoveUpCommand { get; }
         public ICommand MoveDownCommand { get; }
@@ -110,7 +117,7 @@ namespace PdfPigBundle.ViewModel
         {
             if (paths == null || paths.Length == 0) return;
 
-            // 如果输出路径为空，自动设置为第一个文件所在目录
+            // 如果输出路径为空，自动设置为第一个被加入文件所在的目录
             if (string.IsNullOrEmpty(OutputPath) && paths.Length > 0)
             {
                 var dir = Path.GetDirectoryName(paths[0]);
@@ -128,7 +135,9 @@ namespace PdfPigBundle.ViewModel
             {
                 foreach (var path in paths)
                 {
-                    if (File.Exists(path) && !FileItems.Any(f => f.FilePath == path))
+                    //if (File.Exists(path) && !FileItems.Any(f => f.FilePath == path)) //检查是否已存在列表中，避免重复添加
+                    //if (File.Exists(path))  //不去重
+                    if (File.Exists(path) && (EnableAddDuplicateCheck ? !FileItems.Any(f => f.FilePath == path) : true))
                     {
                         var item = new FileItem { FilePath = path, FileName = Path.GetFileName(path) };
                         try
