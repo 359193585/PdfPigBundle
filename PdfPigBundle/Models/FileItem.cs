@@ -1,10 +1,9 @@
 //FileItem.cs
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using PdfPigBundle.Infrastructure;
 
 namespace PdfPigBundle.Models
 {
-    public class FileItem : INotifyPropertyChanged
+    public class FileItem : ObservableObject
     {
         private string? _fileName;
         private string? _filePath;
@@ -44,15 +43,6 @@ namespace PdfPigBundle.Models
 
         public string FileSizeDisplay => FileSize > 0 ? $"{FileSize / 1024.0:F1} KB" : "未知";
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (!Equals(field, value))
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
+      
     }
 }

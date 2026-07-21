@@ -1,5 +1,5 @@
 //MergeProgress.cs
-namespace PdfPigBundle.Models;
+namespace PdfPigBundle.Contracts;
 /// <summary>
 /// 合并进度信息
 /// </summary>

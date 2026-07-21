@@ -11,8 +11,8 @@
         DragDrop.DragOver="OnDragOver"
         DragDrop.Drop="OnDrop">
 
-    <Grid Margin="10" RowDefinitions="Auto,*,Auto,Auto,Auto">
-        <!-- 工具栏 -->
+    <Grid Margin="10" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+        <!-- 工具栏 (Row 0) -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5" Margin="0,0,0,10">
             <Button Content="添加文件"
                     HorizontalContentAlignment ="Center"
@@ -35,7 +35,7 @@
                     Command="{Binding AboutCommand}" />
         </StackPanel>
 
-        <!-- 文件列表 -->
+        <!-- 文件列表 (Row 1) -->
         <DataGrid Grid.Row="1" 
                   x:Name="FileDataGrid"
                   ItemsSource="{Binding FileItems}"
@@ -56,14 +56,46 @@
            <Button Grid.Column="3" Content="📁 打开文件夹" Click="OnOpenFolderClicked" />
        </Grid>
 
+
+      <!-- 文档信息 (Row 3) -->
+    <Border Grid.Row="3" Margin="0,5,0,5" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" Padding="5">
+       <StackPanel>
+        <!-- 提示信息 -->
+        <TextBlock Text="以下信息将写入合并后的 PDF 元数据，您可自由修改"
+                   FontSize="11"
+                   Opacity="0.7"
+                   Margin="0,0,0,5" />
+        <!-- 输入框区域 -->
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="标题：" VerticalAlignment="Center" />
+                <TextBox Text="{Binding DocTitle}" Width="120" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="作者：" VerticalAlignment="Center" />
+                <TextBox Text="{Binding DocAuthor}" Width="120" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="主题：" VerticalAlignment="Center" />
+                <TextBox Text="{Binding DocSubject}" Width="120" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="创建者：" VerticalAlignment="Center" />
+                <TextBox Text="{Binding DocCreator}" Width="120" />
+            </StackPanel>
+        </StackPanel>
+        </StackPanel>
+    </Border>
+
+
         <!-- 进度条与状态 -->
-        <Grid Grid.Row="3" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
+        <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
             <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" Height="20" />
             <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,5,0,0" />
         </Grid>
 
         <!-- 合并按钮 -->
-        <Button Grid.Row="4"
+        <Button Grid.Row="5"
                 Name="MergeButton" 
                 Content="开始合并" 
                 HorizontalAlignment="Center"  

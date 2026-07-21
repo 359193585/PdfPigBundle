@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace PdfPigBundle.Models;
+namespace PdfPigBundle.Contracts;
 
 /// <summary>
 /// 书签生成器，用于为合并后的文档生成书签（目录）。

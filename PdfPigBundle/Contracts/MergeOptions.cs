@@ -2,7 +2,7 @@
 
 using System;
 
-namespace PdfPigBundle.Models;
+namespace PdfPigBundle.Contracts;
 public class MergeOptions
 {
     public bool IgnoreDuplicates { get; set; } = true;

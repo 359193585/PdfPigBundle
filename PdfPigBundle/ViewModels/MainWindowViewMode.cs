@@ -7,21 +7,23 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using PdfPigBundle.Contracts;
+using PdfPigBundle.Infrastructure;
 using PdfPigBundle.Models;
 using PdfPigBundle.Service;
-using PdfSharp.Pdf;
+using PdfPigBundle.Services;
 using PdfSharp.Pdf.IO;
 
 namespace PdfPigBundle.ViewModel
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : ObservableObject
     {
         private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
-        public event EventHandler<string> ShowMessageRequested;
+        public event EventHandler<string> ShowMessageRequested = delegate { };
 
         public ObservableCollection<FileItem> FileItems { get; } = new ObservableCollection<FileItem>();
 
-        private string _outputPath;
+        private string _outputPath = string.Empty;
         public string OutputPath
         {
             get => _outputPath;
@@ -49,8 +51,8 @@ namespace PdfPigBundle.ViewModel
             set => SetProperty(ref _canMerge, value);
         }
 
-        private FileItem _selectedItem;
-        public FileItem SelectedItem
+        private FileItem? _selectedItem = null!;
+        public FileItem? SelectedItem
         {
             get => _selectedItem;
             set => SetProperty(ref _selectedItem, value);
@@ -157,6 +159,7 @@ namespace PdfPigBundle.ViewModel
                 {
                     StatusMessage = $"已加载 {FileItems.Count} 个文件";
                     UpdateCanMerge();
+                    UpdateDefaultSubject();
                 });
             });
         }
@@ -165,16 +168,7 @@ namespace PdfPigBundle.ViewModel
         {
             OutputPath = path;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string name = null)
-        {
-            if (!Equals(field, value))
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            }
-        }
+      
         #endregion
 
         #region 私有方法（清空、上移、下移、删除选中、合并）
@@ -185,6 +179,7 @@ namespace PdfPigBundle.ViewModel
             OutputPath = "";
             StatusMessage = "列表已清空";
             UpdateCanMerge();
+            UpdateDefaultSubject();
         }
 
         // ---------- 上移 ----------
@@ -312,7 +307,11 @@ namespace PdfPigBundle.ViewModel
                 {
                     IgnoreDuplicates = false,
                     Progress = progress,
-                    BookmarkGenerator = new SimpleBookmarkGenerator() // 实现 IBookmarkGenerator 接口的类，用于生成书签
+                    BookmarkGenerator = new SimpleBookmarkGenerator(), // 实现 IBookmarkGenerator 接口的类，用于生成书签
+                    Title = DocTitle,
+                    Author = DocAuthor,
+                    Subject = DocSubject,
+                    Creator = DocCreator
                 };
                 var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
 
@@ -337,8 +336,58 @@ namespace PdfPigBundle.ViewModel
                 CanMerge = FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath);
             }
         }
+
+        private void UpdateDefaultSubject()
+        {
+            if (_isSubjectManuallySet) return; // 如果用户已手动修改，不覆盖
+
+            if (FileItems.Count == 0)
+            {
+                _docSubject = "";
+                OnPropertyChanged(nameof(DocSubject));
+                return;
+            }
+
+            string firstFileName = Path.GetFileNameWithoutExtension(FileItems[0].FileName);
+            string date = DateTime.Now.ToString("yyyy-MM-dd");
+            string subject = $"{date} {firstFileName}等文件的合并版";
+            _docSubject = subject;
+            OnPropertyChanged(nameof(DocSubject));
+        }
         #endregion
 
-      
+        #region  PDF 文档属性
+        private bool _isSubjectManuallySet = false;
+        private string _docTitle = "合并的文档";
+        public string DocTitle
+        {
+            get => _docTitle;
+            set => SetProperty(ref _docTitle, value);
+        }
+
+        private string _docAuthor = "PDFMerger的用户";
+        public string DocAuthor
+        {
+            get => _docAuthor;
+            set => SetProperty(ref _docAuthor, value);
+        }
+
+        private string _docSubject = "";
+        public string DocSubject
+        {
+            get => _docSubject;
+            set {
+                if (SetProperty(ref _docSubject, value))
+                    _isSubjectManuallySet = true;
+            }
+        }
+
+        private string _docCreator = "PDFMerger";
+        public string DocCreator
+        {
+            get => _docCreator;
+            set => SetProperty(ref _docCreator, value);
+        }
+        #endregion
     }
 }

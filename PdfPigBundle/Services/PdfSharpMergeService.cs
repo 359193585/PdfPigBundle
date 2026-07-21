@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PdfPigBundle.Models;
+using PdfPigBundle.Contracts;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
@@ -29,16 +29,14 @@ namespace PdfPigBundle.Service
                 using (var outputDocument = new PdfDocument())
                 {
                     // 设置文档信息
-                    outputDocument.Info.Title = options.Title ?? "合并文档";
-                    outputDocument.Info.Author = options.Author ?? "PDFsharp合并工具";
-                    outputDocument.Info.Subject = options.Subject ?? "PDFsharp合并工具";
-                    outputDocument.Info.Creator = options.Creator ?? "Leison";
+                    outputDocument.Info.Title = options.Title ?? "合并的文档";
+                    outputDocument.Info.Author = options.Author ?? "PDFMerger用户";
+                    outputDocument.Info.Subject = options.Subject ?? "";
+                    outputDocument.Info.Creator = options.Creator ?? "PDFMerger";
 
-                    var context = new MergeContext
+                    var context = new MergeContext(outputDocument, finalPaths, options)
                     {
-                        OutputDocument = outputDocument,
-                        FinalPaths = finalPaths,
-                        Options = options,
+                        FileInfos = new List<FileMergeInfo>(), // 用于存储每个文件的合并信息，处理过文件才有赋值
                         TotalPages = 0,
                         FileIndex = 0
                     };
@@ -81,8 +79,15 @@ namespace PdfPigBundle.Service
         }
         private class MergeContext
         {
+            public MergeContext(PdfDocument outputDocument, List<string> finalPaths, MergeOptions options)
+            {
+                OutputDocument = outputDocument ?? throw new ArgumentNullException(nameof(outputDocument));
+                FinalPaths = finalPaths ?? throw new ArgumentNullException(nameof(finalPaths));
+                Options = options ?? throw new ArgumentNullException(nameof(options));
+                FileInfos = new List<FileMergeInfo>();
+            }
             public PdfDocument OutputDocument { get; set; }
-            public List<FileMergeInfo> FileInfos { get; set; } = new List<FileMergeInfo>();
+            public List<FileMergeInfo> FileInfos { get; set; }
             public List<string> FinalPaths { get; set; }
             public MergeOptions Options { get; set; }
             public int TotalPages { get; set; }

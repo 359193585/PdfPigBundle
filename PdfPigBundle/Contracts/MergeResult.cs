@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace PdfPigBundle.Models;
+namespace PdfPigBundle.Contracts;
 /// <summary>
 /// 合并结果
 /// </summary>

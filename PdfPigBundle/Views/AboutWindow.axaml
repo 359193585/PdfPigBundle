@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="PdfPigBundle.Views.AboutWindow"
-        Title="About PdfPigBundle"
+        Title="About PDFMerger"
         Width="360"
         Height="260"
         WindowStartupLocation="CenterScreen"
@@ -29,7 +29,7 @@
         
         <!-- 应用名称 -->
         <TextBlock Grid.Row="1"
-                   Text="PdfPigBundle"
+                   Text="PDFMerger"
                    FontSize="20"
                    FontWeight="Bold"
                    HorizontalAlignment="Center" />

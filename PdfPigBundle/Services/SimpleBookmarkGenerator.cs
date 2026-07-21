@@ -1,10 +1,10 @@
-using System;
+
+//SimpleBookmarkGenerator.cs
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PdfPigBundle.Contracts;
 
-namespace PdfPigBundle.Models;
+namespace PdfPigBundle.Services;
 public class SimpleBookmarkGenerator : IBookmarkGenerator
 {
     public IList<BookmarkEntry> GenerateBookmarks(IList<FileBookmarkInfo> fileEntries)
