@@ -9,7 +9,7 @@ set -e
 # ---------- 定义名称 ----------
 PROJECT_DIR_NAME="PdfPigBundle"   # 项目文件夹名（用于定位源代码和发布路径）
 APP_NAME="PDFMerger"              # 最终应用名称（用户看到的名称）
-BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID 建议也更新为与名称匹配
+BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID 
 VERSION=${1:-""}                  # 可选参数，若留空则自动提取
 
 # ---------- 查找发布目录 ----------

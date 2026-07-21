@@ -91,16 +91,16 @@ foreach ($rid in $runtimes) {
         dotnet @bundledLaunchArgs
 
 
-         # ==========  为 Linux 添加 .desktop 文件和图标 ==========
+    # ==========  为 Linux 添加 .desktop 文件和图标 ==========
     if ($rid -like "linux-*") {
         # 复制 .desktop 文件
-        $desktopSource = "$PROJ_FOLDER\BuildAssets\Linux\PDFMerger.desktop"
+        $desktopSource = "$PROJ_FOLDER\BuildAssets\Linux\$PROJ_NAME.desktop"
         if (Test-Path $desktopSource) {
             Copy-Item $desktopSource -Destination $baseOutput -Force
             Copy-Item $desktopSource -Destination $bundledOutput -Force
-            Write-Host "已复制 PDFMerger.desktop 到 Linux 发布目录" -ForegroundColor Yellow
+            Write-Host "已复制 $PROJ_NAME.desktop 到 Linux 发布目录" -ForegroundColor Yellow
         } else {
-            Write-Host "警告: 未找到 PDFMerger.desktop 文件，Linux 桌面集成将不完整。" -ForegroundColor Red
+            Write-Host "警告: 未找到 $PROJ_NAME.desktop 文件，Linux 桌面集成将不完整。" -ForegroundColor Red
         }
 
         # 复制图标文件（使用 Assets/icon.png）
@@ -136,10 +136,10 @@ foreach ($rid in $runtimes) {
         $wslBundledTar = $bundledTar -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
 
         # 3. 设置执行权限
-        wsl chmod +x "$wslBaseOutput/PDFMerger"
-        wsl chmod +x "$wslBundledOutput/PDFMerger"
-        wsl chmod +x "$wslBaseOutput/PDFMerger.desktop"
-        wsl chmod +x "$wslBundledOutput/PDFMerger.desktop"
+        wsl chmod +x "$wslBaseOutput/$PROJ_NAME"
+        wsl chmod +x "$wslBundledOutput/$PROJ_NAME"
+        wsl chmod +x "$wslBaseOutput/$PROJ_NAME.desktop"
+        wsl chmod +x "$wslBundledOutput/$PROJ_NAME.desktop"
 
         # 4. 打包为 .tar.gz（保留权限）
         wsl tar -czf "$wslBaseTar" -C "$wslBaseOutput" .
@@ -151,30 +151,7 @@ foreach ($rid in $runtimes) {
         Write-Host "✅ 已生成: $baseTar 和 $bundledTar" -ForegroundColor Green
     }
 
-    if ($rid -like "osx-*") {
-       Write-Host "`n=== 正在调用 macOS 打包脚本 ===" -ForegroundColor Cyan
-
-       #  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
-       $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-       $drive = $ScriptDir[0].ToString().ToLower()
-       $wslScriptDir = "/mnt/$drive" + $ScriptDir.Substring(2) -replace '\\', '/'
-       Write-Host "项目根目录 (WSL): $wslScriptDir"
-
-       # 确保 PackageMacApp.sh 有执行权限（在 WSL 中）
-       wsl chmod +x "$wslScriptDir/PackageMacApp.sh" 2>$null
-
-        # 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
-        wsl bash -c "cd '$wslScriptDir' && ./PackageMacApp.sh $version"
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "⚠️ macOS 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
-        } else {
-            Write-Host "✅ macOS 打包完成" -ForegroundColor Green
-            #  删除未打包的目录
-            Remove-Item -Recurse -Force $baseOutput, $bundledOutput
-        }
-    }
-
+   
 
 
     # 4.5 GitHub Release
@@ -189,5 +166,27 @@ foreach ($rid in $runtimes) {
       #      --title "$PROJ_NAME $version" `
       #      --notes "Release of $PROJ_NAME $version with both self-contained and dependent builds."
 }
+
+# ===========================================================================
+Write-Host "`n=== 正在调用 macOS 打包脚本 ===" -ForegroundColor Cyan
+
+#  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$drive = $ScriptDir[0].ToString().ToLower()
+$wslScriptDir = "/mnt/$drive" + $ScriptDir.Substring(2) -replace '\\', '/'
+Write-Host "项目根目录 (WSL): $wslScriptDir"
+
+# 确保 PackageMacApp.sh 有执行权限（在 WSL 中）
+wsl chmod +x "$wslScriptDir/PackageMacApp.sh" 2>$null
+
+# 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
+wsl bash -c "cd '$wslScriptDir' && ./PackageMacApp.sh $version"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "⚠️ macOS 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
+} else {
+    Write-Host "✅ macOS 打包完成" -ForegroundColor Green
+}
+
 
 Write-Host "`n=== 所有平台发布完成 ===" -ForegroundColor Green
