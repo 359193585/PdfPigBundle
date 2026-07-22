@@ -122,7 +122,7 @@ foreach ($rid in $runtimes) {
     }
     # ==========================================================
 
-    # 在 Windows 打包前，删除所有 .pdb 文件
+    # 在打包前，删除所有 .pdb 文件
     Get-ChildItem -Path $baseOutput -Filter "*.pdb" | Remove-Item -Force
     Get-ChildItem -Path $bundledOutput -Filter "*.pdb" | Remove-Item -Force
 
@@ -178,7 +178,7 @@ foreach ($rid in $runtimes) {
 }
 
 # ===========================================================================
-Write-Host "`n=== 正在调用 macOS 打包脚本 ===" -ForegroundColor Cyan
+Write-Host "`n=== 正在调用独立的 macOS 打包脚本 ===" -ForegroundColor Cyan
 
 #  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -197,6 +197,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 else {
     Write-Host "✅ macOS 打包完成" -ForegroundColor Green
+    # 清理已经打包的 macOS 目录（如果需要保留，可以注释掉以下行）
     Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-x64"
     Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-arm64"
     Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-x64-bundled"
