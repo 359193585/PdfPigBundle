@@ -117,6 +117,9 @@ foreach ($rid in $runtimes) {
     }
     # ==========================================================
 
+    # 在 Windows 打包前，删除所有 .pdb 文件
+    Get-ChildItem -Path $baseOutput -Filter "*.pdb" | Remove-Item -Force
+    Get-ChildItem -Path $bundledOutput -Filter "*.pdb" | Remove-Item -Force
 
     # 4.4 打包 ZIP
     if ($rid -like "win-*") {
