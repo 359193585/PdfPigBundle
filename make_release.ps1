@@ -3,6 +3,11 @@
 #   如没有 PowerShell 7，请先安装 PowerShell 7
 #   或者修改脚本，使得它符合你当前的 PowerShell 版本
 #
+#   用 Resolve-Path 命令的可用性，探测 VS 初始化ps 环境是否完整）
+if (-not (Get-Command Resolve-Path -ErrorAction SilentlyContinue)) {
+    Write-Host "检测到 Resolve-Path 不可用，正在修复..." -ForegroundColor Yellow
+    Import-Module Microsoft.PowerShell.Management -Force -ErrorAction SilentlyContinue
+}
 
 # 项目文件夹名
 $PROJ_FOLDER = "PdfPigBundle"
