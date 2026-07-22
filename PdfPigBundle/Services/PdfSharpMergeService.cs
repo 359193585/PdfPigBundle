@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PdfPigBundle.Contracts;
+using PdfSharp.Drawing;
+using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
@@ -65,6 +67,11 @@ namespace PdfPigBundle.Service
                         GenerateBookmarks(outputDocument, context.FileInfos);
                     }
 
+                    // 所有页面添加完成后，检查是否需要添加页码
+                    if (options.AddPageNumbers && result.TotalPages > 0)
+                    {
+                        AddPageNumbers(outputDocument);
+                    }
                     // 保存文件
                     outputDocument.Save(outputPath);
                     return result;
@@ -75,6 +82,31 @@ namespace PdfPigBundle.Service
                 result.Success = false;
                 result.ErrorMessage = ex.ToString();
                 return result;
+            }
+        }
+        private void AddPageNumbers(PdfDocument document)
+        {
+            int totalPages = document.PageCount;
+            // 使用标准 Helvetica 字体
+            GlobalFontSettings.FontResolver = new CustomFontResolver();
+            XFont font = new XFont("Helvetica", 12, XFontStyleEx.Regular);
+            XBrush brush = XBrushes.Black;
+
+            for (int i = 0; i < totalPages; i++)
+            {
+                PdfPage page = document.Pages[i];
+                // 以追加模式打开页面进行绘制
+                using (XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append))
+                {
+                    string text = $"{i + 1} / {totalPages}";
+                    XSize size = gfx.MeasureString(text, font);
+                    // 底部居中，距底部 20 点
+                    double pageWidth = page.Width.Point;
+                    double pageHeight = page.Height.Point;
+                    double x = (pageWidth - size.Width) / 2;
+                    double y = pageHeight - 20; // 距底部 20 点
+                    gfx.DrawString(text, font, brush, x, y);
+                }
             }
         }
         private class MergeContext

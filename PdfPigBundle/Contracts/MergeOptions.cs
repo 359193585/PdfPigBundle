@@ -15,4 +15,6 @@ public class MergeOptions
     public IBookmarkGenerator? BookmarkGenerator { get; set; }
 
     public IProgress<MergeProgress>? Progress { get; set; }
+
+    public bool AddPageNumbers { get; set; } = false;
 }

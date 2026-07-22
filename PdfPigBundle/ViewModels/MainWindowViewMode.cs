@@ -308,10 +308,6 @@ namespace PdfPigBundle.ViewModel
                     });
                 });
 
-                //var result = await Task.Run(() =>
-                //    _merger.Merge(filePaths, OutputPath, ignoreDuplicates: false, progress)
-                //);
-
                 var options = new MergeOptions
                 {
                     IgnoreDuplicates = false,
@@ -320,7 +316,8 @@ namespace PdfPigBundle.ViewModel
                     Title = DocTitle,
                     Author = DocAuthor,
                     Subject = DocSubject,
-                    Creator = DocCreator
+                    Creator = DocCreator,
+                    AddPageNumbers = AddPageNumbers
                 };
                 var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
 
@@ -396,6 +393,13 @@ namespace PdfPigBundle.ViewModel
         {
             get => _docCreator;
             set => SetProperty(ref _docCreator, value);
+        }
+
+        private bool _addPageNumbers;
+        public bool AddPageNumbers
+        {
+            get => _addPageNumbers;
+            set => SetProperty(ref _addPageNumbers, value);
         }
         #endregion
     }

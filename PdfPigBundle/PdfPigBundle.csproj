@@ -14,12 +14,15 @@
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\*.png" />
 		<AvaloniaResource Include="Assets\*.ico" />
-		<AvaloniaResource Include="Assets\*.icns" />
+        <AvaloniaResource Include="Assets\*.icns" />
+        <AvaloniaResource Include="Assets\*.ttf" />
 		<None Include="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
 		<None Include="Assets\*.ico" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="Assets\*.icns" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.icns" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.ttf" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 	
+
 	
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.0" />
@@ -37,6 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <Resource Include="Assets\*" />
   </ItemGroup>
 </Project>
