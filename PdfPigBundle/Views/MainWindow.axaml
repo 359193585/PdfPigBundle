@@ -1,123 +1,182 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Controls"
         xmlns:vm="using:PdfPigBundle.ViewModel"
         x:Class="PdfPigBundle.Views.MainWindow"
         x:CompileBindings="False"
         x:DataType="vm:MainWindowViewModel"
         Title="PDF 合并工具"
-        Width="800" Height="600"
+        Width="980" Height="640"
         DragDrop.AllowDrop="True"
         DragDrop.DragOver="OnDragOver"
-        DragDrop.Drop="OnDrop">
+        DragDrop.Drop="OnDrop"
+        Background="#F0F4F8">
 
-    <Grid Margin="10" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" RowSpacing="10">
         <!-- 工具栏 (Row 0) -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5" Margin="0,0,0,10">
-            <Button Content="添加文件"
-                    HorizontalContentAlignment ="Center"
-                    Click="OnAddFilesClicked" />
-            <Button Content="清空列表" 
-                    HorizontalContentAlignment ="Center"
-                    Command="{Binding ClearListCommand}" />
-            <Button Content="上移" 
-                    HorizontalContentAlignment ="Center"
-                    Command="{Binding MoveUpCommand}" />
-            <Button Content="下移" 
-                    HorizontalContentAlignment ="Center"
-                    Command="{Binding MoveDownCommand}" />
-            <Button Content="删除选中"
-                    HorizontalContentAlignment ="Center"
-                    Command="{Binding RemoveSelectedCommand}" />
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,5">
+            <Button Content="📂 添加文件"
+                    Click="OnAddFilesClicked"
+                    Background="#4A90D9"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="12,6" />
+            <Button Content="🗑 清空列表"
+                    Command="{Binding ClearListCommand}"
+                    Background="#E74C3C"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="10,6" />
+            <Button Content="▲ 上移"
+                    Command="{Binding MoveUpCommand}"
+                    Background="#F39C12"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="10,6" />
+            <Button Content="▼ 下移"
+                    Command="{Binding MoveDownCommand}"
+                    Background="#F39C12"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="10,6" />
+            <Button Content="✖ 删除选中"
+                    Command="{Binding RemoveSelectedCommand}"
+                    Background="#E67E22"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="10,6" />
 
-           <CheckBox Content="文件去重"
-                     IsChecked="{Binding EnableAddDuplicateCheck}"
-                     VerticalAlignment="Center"
-                     Margin="10,0,0,0" />
-            <CheckBox Content="自动加页码"
-                     IsChecked="{Binding AddPageNumbers}"
-                     VerticalAlignment="Center"
-                     Margin="10,0,0,0" />
-            <CheckBox Content="允许图片"
-                     IsChecked="{Binding EnableImageSupport}"
-                     VerticalAlignment="Center"
-                     Margin="10,0,0,0" />
+            <Border Width="1" Background="#CCD1D9" Margin="5,0" />
 
-            <Button Content="关于"
-                    Margin="20,0,0,0"
-                    HorizontalContentAlignment ="Center"
-                    Command="{Binding AboutCommand}" />
+            <CheckBox Content="🔁 文件去重"
+                      IsChecked="{Binding EnableAddDuplicateCheck}"
+                      VerticalAlignment="Center"
+                      Foreground="#2C3E50" />
+            <CheckBox Content="🔢 自动加页码"
+                      IsChecked="{Binding AddPageNumbers}"
+                      VerticalAlignment="Center"
+                      Foreground="#2C3E50" />
+            <CheckBox Content="🖼️ 允许图片"
+                      IsChecked="{Binding EnableImageSupport}"
+                      VerticalAlignment="Center"
+                      Foreground="#2C3E50" />
+
+            <Button Content="ℹ️ 关于"
+                    Margin="15,0,0,0"
+                    Command="{Binding AboutCommand}"
+                    Background="Transparent"
+                    Foreground="#3498DB"
+                    BorderThickness="0" />
         </StackPanel>
 
         <!-- 文件列表 (Row 1) -->
-        <DataGrid Grid.Row="1" 
+        <DataGrid Grid.Row="1"
                   x:Name="FileDataGrid"
                   ItemsSource="{Binding FileItems}"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                  IsReadOnly="True" 
+                  IsReadOnly="True"
                   AutoGenerateColumns="False"
                   SelectionMode="Single"
                   CanUserReorderColumns="False"
                   CanUserSortColumns="False"
-                  Margin="0,0,0,10">
+                  Margin="0,0,0,0"
+                  Background="White"
+                  BorderBrush="#DDD"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <DataGrid.Styles>
+                <Style Selector="DataGridCell">
+                    <Setter Property="FontSize" Value="12" />
+                </Style>
+            </DataGrid.Styles>
         </DataGrid>
 
-        <!-- 输出路径 -->
-       <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,10">
-           <TextBlock Text="输出路径：" VerticalAlignment="Center" Margin="0,0,5,0" />
-           <TextBox Grid.Column="1" Text="{Binding OutputPath}" IsReadOnly="True" />
-           <Button Grid.Column="2" Content="浏览..." Click="OnBrowseOutputClicked" Margin="5,0,5,0" />
-           <Button Grid.Column="3" Content="📁 打开文件夹" Click="OnOpenFolderClicked" />
-       </Grid>
-
-
-      <!-- 文档信息 (Row 3) -->
-    <Border Grid.Row="3" Margin="0,5,0,5" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" Padding="5">
-       <StackPanel>
-        <!-- 提示信息 -->
-        <TextBlock Text="以下信息将写入合并后的 PDF 元数据，您可自由修改"
-                   FontSize="11"
-                   Opacity="0.7"
-                   Margin="0,0,0,5" />
-        <!-- 输入框区域 -->
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="标题：" VerticalAlignment="Center" />
-                <TextBox Text="{Binding DocTitle}" Width="120" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="作者：" VerticalAlignment="Center" />
-                <TextBox Text="{Binding DocAuthor}" Width="120" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="主题：" VerticalAlignment="Center" />
-                <TextBox Text="{Binding DocSubject}" Width="120" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="创建者：" VerticalAlignment="Center" />
-                <TextBox Text="{Binding DocCreator}" Width="120" />
-            </StackPanel>
-        </StackPanel>
-        </StackPanel>
-    </Border>
-
-
-        <!-- 进度条与状态 -->
-        <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
-            <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" Height="20" />
-            <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,5,0,0" />
+        <!-- 输出路径 (Row 2) -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,5">
+            <TextBlock Text="📁 输出路径：" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50" />
+            <TextBox Grid.Column="1" Text="{Binding OutputPath}" IsReadOnly="True"
+                     Background="#F4F8FC"
+                     CornerRadius="6"
+                     Padding="8,4" />
+            <Button Grid.Column="2" Content="浏览..." Click="OnBrowseOutputClicked" Margin="5,0,5,0"
+                    Background="#5DADE2"
+                    Foreground="White"
+                    CornerRadius="6"
+                    Padding="12,4" />
+            <Button Grid.Column="3" Content="📂 打开文件夹" Click="OnOpenFolderClicked"
+                    Background="#4A90D9" 
+                    Foreground="White"
+                    CornerRadius="6"
+                    Padding="12,4" />
         </Grid>
 
-        <!-- 合并按钮 -->
+        <!-- 文档信息 (Row 3) -->
+        <Border Grid.Row="3" Margin="0,5,0,5"
+                Background="White"
+                CornerRadius="10"
+                Padding="12,8"
+                BorderBrush="#E0E6ED"
+                BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="📝 以下信息将写入合并后的 PDF 元数据，您可自由修改"
+                           FontSize="11"
+                           Opacity="0.7"
+                           Margin="0,0,0,8"
+                           Foreground="#7F8C8D" />
+                <Grid ColumnDefinitions="2*,1*,2*,1*" ColumnSpacing="10">
+                    <DockPanel Grid.Column="0">
+                        <TextBlock Text="标题：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBox Text="{Binding DocTitle}" CornerRadius="4" Padding="4,2" />
+                    </DockPanel>
+                    <DockPanel Grid.Column="1">
+                        <TextBlock Text="作者：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBox Text="{Binding DocAuthor}" CornerRadius="4" Padding="4,2" />
+                    </DockPanel>
+                    <DockPanel Grid.Column="2">
+                        <TextBlock Text="主题：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBox Text="{Binding DocSubject}" CornerRadius="4" Padding="4,2" />
+                    </DockPanel>
+                    <DockPanel Grid.Column="3">
+                        <TextBlock Text="创建者：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="50" />
+                        <TextBox Text="{Binding DocCreator}" CornerRadius="4" Padding="4,2" />
+                    </DockPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 进度条与状态 (Row 4) -->
+        <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,0,0,5">
+            <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"
+                         Height="20" CornerRadius="10"
+                         Foreground="#4A90D9"
+                         Background="#E8EEF4" />
+            <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,5,0,0"
+                       Foreground="#34495E" FontSize="13" />
+        </Grid>
+
+        <!-- 合并按钮 (Row 5) -->
         <Button Grid.Row="5"
-                Name="MergeButton" 
-                Content="开始合并" 
-                HorizontalAlignment="Center"  
+                Name="MergeButton"
+                Content="🚀 开始合并"
+                HorizontalAlignment="Center"
                 HorizontalContentAlignment="Center"
-                Width="120"
-                Command="{Binding MergeCommand}" IsEnabled="{Binding CanMerge}" />
-
-
-
+                Width="140"
+                Height="40"
+                Command="{Binding MergeCommand}"
+                IsEnabled="{Binding CanMerge}"
+                Background="#4A90D9" 
+                Foreground="White"
+                CornerRadius="20"
+                FontWeight="SemiBold"
+                FontSize="14"
+                Cursor="Hand">
+            <Button.Styles>
+                <Style Selector="Button:pointerover">
+                    <Setter Property="Background" Value="#2ECC71" />
+                </Style>
+                <Style Selector="Button:disabled">
+                    <Setter Property="Background" Value="#BDC3C7" />
+                </Style>
+            </Button.Styles>
+        </Button>
     </Grid>
 </Window>
