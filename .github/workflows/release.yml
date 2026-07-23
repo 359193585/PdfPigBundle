@@ -13,11 +13,12 @@ jobs:
     name: Build on ${{ matrix.os }}
     # 使用矩阵策略，同时在三个主流操作系统上运行 [reference:4]
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-14, ubuntu-latest]
         # 为每个系统定义对应的运行时标识符 (RID) [reference:5]
         include:
-          - os: windows-2022
+          - os: windows-latest
             rid: win-x64
           - os: macos-14
             rid: osx-x64
