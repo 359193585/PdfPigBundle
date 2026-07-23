@@ -15,7 +15,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-14, ubuntu-latest]
         # 为每个系统定义对应的运行时标识符 (RID) [reference:5]
         include:
           - os: windows-latest
