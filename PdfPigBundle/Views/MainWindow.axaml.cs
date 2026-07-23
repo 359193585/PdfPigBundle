@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -58,19 +59,39 @@ namespace PdfPigBundle.Views
         // ---------- 添加文件 ----------
         private async void OnAddFilesClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            var vm = DataContext as MainWindowViewModel;
+            if (vm == null) return;
+
+            var filters = new List<FilePickerFileType>
+            {
+                new FilePickerFileType("PDF 文件")
+                {
+                    Patterns = new[] { "*.pdf" }
+                }
+            };
+
+            if (vm.EnableImageSupport)
+            {
+                filters.Add(new FilePickerFileType("图片文件")
+                {
+                    Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff" }
+                });
+                // 加一个“所有支持的文件”选项
+                filters.Add(new FilePickerFileType("所有支持的文件")
+                {
+                    Patterns = new[] { "*.pdf", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff" }
+                });
+            }
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 AllowMultiple = true,
-                FileTypeFilter = new[] { new FilePickerFileType("PDF 文件") { Patterns = new[] { "*.pdf" } } }
+                FileTypeFilter = filters
             });
 
             if (files != null && files.Count > 0)
             {
                 var paths = files.Select(f => f.Path.LocalPath).ToArray();
-                if (DataContext is MainWindowViewModel vm)
-                {
-                    vm.AddFiles(paths); // 调用 ViewModel 的同步方法
-                }
+                vm.AddFiles(paths); 
             }
         }
 

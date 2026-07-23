@@ -65,6 +65,12 @@ namespace PdfPigBundle.ViewModel
             set => SetProperty(ref _enableAddDuplicateCheck, value);
         }
 
+        private bool _enableImageSupport = false;
+        public bool EnableImageSupport
+        {
+            get => _enableImageSupport;
+            set => SetProperty(ref _enableImageSupport, value);
+        }
         public ICommand ClearListCommand { get; }
         public ICommand MoveUpCommand { get; }
         public ICommand MoveDownCommand { get; }
@@ -135,17 +141,34 @@ namespace PdfPigBundle.ViewModel
             {
                 foreach (var path in paths)
                 {
-                    //if (File.Exists(path) && !FileItems.Any(f => f.FilePath == path)) //检查是否已存在列表中，避免重复添加
-                    //if (File.Exists(path))  //不去重
                     if (File.Exists(path) && (EnableAddDuplicateCheck ? !FileItems.Any(f => f.FilePath == path) : true))
                     {
                         var item = new FileItem { FilePath = path, FileName = Path.GetFileName(path) };
+                        // 判断文件类型
+                        string ext = Path.GetExtension(path).ToLower();
+                        if (ext == ".pdf")
+                            item.Type = FileType.Pdf;
+                        else if (EnableImageSupport && (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff"))
+                            item.Type = FileType.Image;
+                        else
+                            continue; // 不支持的类型，跳过
+
+                        // 读取信息（PDF 读取页数、作者；图片可以不读或读尺寸，但暂时保留简单信息）
                         try
                         {
-                            using (var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import))
+                            if (item.Type == FileType.Pdf)
                             {
-                                item.PageCount = doc.PageCount;
-                                item.Author = doc.Info.Author ?? "";
+                                using (var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import))
+                                {
+                                    item.PageCount = doc.PageCount;
+                                    item.Author = doc.Info.Author ?? "";
+                                }
+                            }
+                            else
+                            {
+                                // 图片：页数设为1，作者设为"图片"
+                                item.PageCount = 1;
+                                item.Author = "图片";
                             }
                             var fi = new FileInfo(path);
                             item.FileSize = fi.Length;

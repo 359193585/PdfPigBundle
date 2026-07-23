@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PdfPigBundle.Contracts;
+using PdfPigBundle.Services;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
 using PdfSharp.Pdf;
@@ -18,7 +19,7 @@ namespace PdfPigBundle.Service
     public class PdfSharpMergeService
     {
         /// <summary>
-        /// 使用指定选项合并 PDF 文件
+        /// 使用指定选项合并 PDF 文件，核心方法，返回合并结果
         /// </summary>
         public MergeResult Merge(string[] filePaths, string outputPath, MergeOptions options)
         {
@@ -45,7 +46,17 @@ namespace PdfPigBundle.Service
 
                     foreach (var path in finalPaths)
                     {
-                        ProcessSingleFile(context, path);
+                        string ext = Path.GetExtension(path).ToLower();
+                        bool isImage = (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff");
+
+                        if (isImage)
+                        {
+                            ProcessSingleImage(context, path);
+                        }
+                        else
+                        {
+                            ProcessSingleFile(context, path);
+                        }
                     }
 
                     // 报告完成进度
@@ -148,8 +159,25 @@ namespace PdfPigBundle.Service
             }
         }
 
+        private void ProcessSingleImage(MergeContext context, string imagePath)
+        {
+            var converter = new ImageToPdfPageConverter();
+            using (var imgDoc = converter.ConvertImageToPdfDocument(imagePath, ImageToPdfPageConverter.PageSizeMode.A4))
+            using (var ms = new MemoryStream())
+            {
+                imgDoc.Save(ms);
+                ms.Position = 0;
+                using (var importDoc = PdfReader.Open(ms, PdfDocumentOpenMode.Import))
+                {
+                    var pages = importDoc.Pages.Cast<PdfPage>();
+                    // 图片无子书签，传空列表
+                    ProcessPages(context, imagePath, pages, importDoc.PageCount, new List<OutlineNode>());
+                }
+            }
+        }
         private void ProcessSingleFile(MergeContext context, string path)
         {
+
             using (var inputDocument = PdfReader.Open(path, PdfDocumentOpenMode.Import))
             {
                 var pageIndexMap = new Dictionary<PdfPage, int>();
@@ -163,39 +191,52 @@ namespace PdfPigBundle.Service
 
                 var outlineNodes = ExtractOutlineNodes(inputDocument.Outlines, pageIndexMap);
 
-                // 记录文件信息（用于书签）
-                var fileInfo = new FileMergeInfo
-                {
-                    FilePath = path,
-                    FileNameWithoutExtension = Path.GetFileNameWithoutExtension(path),
-                    StartPageNumber = startPage,
-                    PageCount = pageCount,
-                    OutlineNodes = outlineNodes
-                };
-                context.FileInfos.Add(fileInfo);
+                var pages = inputDocument.Pages.Cast<PdfPage>();
 
-                // 报告当前文件处理进度（非完成）
-                context.Options.Progress?.Report(new MergeProgress
-                {
-                    FileIndex = context.FileIndex,
-                    TotalFiles = context.FinalPaths.Count,
-                    FileName = Path.GetFileName(path),
-                    PageCount = pageCount,
-                    TotalPagesProcessed = context.TotalPages,
-                    IsComplete = false
-                });
-
-                // 复制页面到输出文档
-                for (int i = 0; i < pageCount; i++)
-                {
-                    context.OutputDocument.AddPage(inputDocument.Pages[i]);
-                }
-
-                context.TotalPages += pageCount;
-                context.FileIndex++;
+                ProcessPages(context, path, pages, inputDocument.PageCount, outlineNodes);
             }
         }
 
+        private void ProcessPages(
+                    MergeContext context,
+                    string filePath,
+                    IEnumerable<PdfPage> pages,
+                    int pageCount,
+                    List<OutlineNode>? outlineNodes = null)
+        {
+            int startPage = context.TotalPages + 1;
+
+            // 记录文件信息（用于书签）
+            var fileInfo = new FileMergeInfo
+            {
+                FilePath = filePath,
+                FileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath),
+                StartPageNumber = startPage,
+                PageCount = pageCount,
+                OutlineNodes = outlineNodes ?? new List<OutlineNode>()
+            };
+            context.FileInfos.Add(fileInfo);
+
+            // 报告当前文件处理进度（非完成）
+            context.Options.Progress?.Report(new MergeProgress
+            {
+                FileIndex = context.FileIndex,
+                TotalFiles = context.FinalPaths.Count,
+                FileName = Path.GetFileName(filePath),
+                PageCount = pageCount,
+                TotalPagesProcessed = context.TotalPages,
+                IsComplete = false
+            });
+
+            // 复制页面到输出文档
+            foreach (var page in pages)
+            {
+                context.OutputDocument.AddPage(page);
+            }
+
+            context.TotalPages += pageCount;
+            context.FileIndex++;
+        }
         private List<string> CheckFilesStatus(string[] filePaths, MergeOptions options, MergeResult result)
         {
             if (filePaths == null || filePaths.Length == 0)
@@ -275,7 +316,7 @@ namespace PdfPigBundle.Service
             }
         }
 
-        // ---------- 重载方法（与原来保持一致） ----------
+        // ---------- Merge 重载方法  ----------
         public MergeResult Merge(string[] filePaths)
         {
             var output = Path.Combine(
