@@ -1,0 +1,107 @@
+# .github/workflows/release.yml
+name: Release
+
+# 当推送的标签符合 'v*' 格式时触发，例如 v1.2.3 
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # 定义一个名为 'build' 的作业
+  build:
+    name: Build on ${{ matrix.os }}
+    # 使用矩阵策略，同时在三个主流操作系统上运行 [reference:4]
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        # 为每个系统定义对应的运行时标识符 (RID) [reference:5]
+        include:
+          - os: windows-2022
+            rid: win-x64
+          - os: macos-14
+            rid: osx-x64
+          - os: macos-14
+            rid: osx-arm64
+          - os: ubuntu-latest
+            rid: linux-x64
+
+    # 指定当前子任务运行的操作系统
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # 1. 拉取代码 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装 .NET SDK 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # 指定你的项目使用的 .NET 版本，例如 '8.0.x'
+          dotnet-version: '8.0.x'
+
+      # 3. 还原依赖
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # 4. 构建项目（非必须，但可提前发现编译错误）
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      # 5. 发布为自包含单文件 [reference:9]
+      - name: Publish for ${{ matrix.rid }}
+        run: |
+          dotnet publish ./PdfPigBundle/PdfPigBundle.csproj `
+            --configuration Release `
+            --runtime ${{ matrix.rid }} `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=false `
+            --output ./publish/${{ matrix.rid }}
+        shell: pwsh
+
+      # 6. 打包发布产物
+      - name: Package artifacts
+        run: |
+          $rid = "${{ matrix.rid }}"
+          $version = "${{ github.ref_name }}".Replace("v", "")
+          $assetName = "PDFMerger-$version-$rid.zip"
+          Compress-Archive -Path ./publish/$rid/* -DestinationPath ./$assetName
+          echo "ASSET_NAME=$assetName" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      # 7. 将打包后的文件上传为工作流产物 (Artifact)
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ASSET_NAME }}
+          path: ./${{ env.ASSET_NAME }}
+
+  # 定义一个名为 'release' 的作业，它依赖于 'build' 作业完成
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    # 确保只有来自仓库的推送事件才触发，防止 fork 仓库误用
+    if: github.repository == '359193585/PdfPigBundle'
+    permissions:
+      contents: write # 授予创建 Release 和上传文件的权限
+
+    steps:
+      # 1. 下载所有构建产物
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      # 2. 创建 GitHub Release 并上传产物 [reference:10]
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 上传 artifacts 文件夹下的所有 .zip 文件
+          files: ./artifacts/**/*.zip
+          # 自动生成 Release 的说明 (基于提交信息)
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
