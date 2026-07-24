@@ -42,4 +42,11 @@
   <ItemGroup>
     <Resource Include="Assets\*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove=".github\**" />
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
+  </ItemGroup>
 </Project>

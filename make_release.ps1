@@ -1,3 +1,8 @@
+param(
+    [string]$Version = "",
+    [switch]$CI
+)
+
 #
 #   请在 PowerShell 7 中运行此脚本
 #   如没有 PowerShell 7，请先安装 PowerShell 7
@@ -15,33 +20,39 @@ $PROJ_FOLDER = "PdfPigBundle"
 # 发布产物名称（用户看到的名称）
 $PROJ_NAME = "PDFMerger"
 
-# 版本号文件
-$patchFile = Resolve-Path "version_patch.txt" -ErrorAction SilentlyContinue
 
-# 1. 读取和写入 Patch 号 (防止 PS7 文件锁)
-$patch = 0
-if ($patchFile -and (Test-Path $patchFile)) {
-    $patch = [int]([System.IO.File]::ReadAllText($patchFile).Trim())
+if ($Version) {
+    # 如果指定了版本号，则使用该版本号
+    $version = $Version
+    Write-Host "使用指定版本: $version" -ForegroundColor Cyan
 }
-$patch++
-[System.IO.File]::WriteAllText((New-Item -Path "version_patch.txt" -Force), $patch.ToString())
-
-# 2. 版本号定义
-$major = 1
-$minor = 2
-$version = "$major.$minor.$patch"
-$assemblyVersion = "$major.$minor.$patch.0"
+else {
+    # 读取和写入 Patch 号 (防止 PS7 文件锁)
+    $patchFile = Resolve-Path "version_patch.txt" -ErrorAction SilentlyContinue
+    $patch = 0
+    if (Test-Path $patchFile) {
+        $patch = [int](Get-Content $patchFile)
+    }
+    $patch++
+    Set-Content $patchFile $patch
+    $major = 1
+    $minor = 2
+    $version = "$major.$minor.$patch"
+    $assemblyVersion = "$major.$minor.$patch.0"
+    [System.IO.File]::WriteAllText((New-Item -Path "version_patch.txt" -Force), $patch.ToString())
+    Write-Host "自动递增版本: $version" -ForegroundColor Cyan
+}
 
 Write-Host "=== 发布 $PROJ_NAME $version ===" -ForegroundColor Green
 
-# 3. 清理旧包
+#  清理旧包
 if (Test-Path  "publish") { Remove-Item -Recurse -Force  "publish" }
 
 
-# 4. 按照运行时发布
-#$runtimes = @( "win-x64")
-$runtimes = @( "osx-arm64")
-#$runtimes = @( "linux-x64")
+#  运行时设置
+# $runtimes = @( "win-x64")
+# $runtimes = @( "osx-arm64")
+# $runtimes = @( "linux-x64")
 # $runtimes = @( "linux-x64", "linux-arm64")
 # $runtimes = @("win-x64", "linux-x64", "linux-arm64","osx-arm64")
 $runtimes = @("win-x64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
@@ -56,7 +67,7 @@ foreach ($rid in $runtimes) {
     $baseZip = "publish\$baseFolder.zip"
     $bundledZip = "publish\$bundledFolder.zip"
 
-    # 4.2 准备基础参数
+    # 1 准备基础参数
     $baseArgs = @(
         "publish", ".\$PROJ_FOLDER\$PROJ_FOLDER.csproj", 
         "-c", "Release", 
@@ -69,7 +80,7 @@ foreach ($rid in $runtimes) {
     # 设置 Windows 应用程序图标（其他平台忽略此参数）
     $baseArgs += @("-p:ApplicationIcon=Assets/icon.ico")
         
-    # 4.2.1 纯净 Base 版
+    # 2 纯净 Base 版
     $baseLaunchArgs = $baseArgs + @(
         "--self-contained", "false", 
         "-p:SelfContained=false", 
@@ -78,7 +89,7 @@ foreach ($rid in $runtimes) {
         "-p:PublishReadyToRun=false", 
         "--output", $baseOutput
     )
-    # 4.2.2 Bundled 版
+    # 3 Bundled 版
     $bundledLaunchArgs = $baseArgs + @(
         "--self-contained", "true", 
         "-p:SelfContained=true", 
@@ -88,9 +99,11 @@ foreach ($rid in $runtimes) {
         "-p:PublishReadyToRun=false",
         "--output", $bundledOutput
     )
-    # 4.3 发布
-    Write-Host "开始发布 Base 版..." -ForegroundColor Cyan
-    dotnet @baseLaunchArgs
+    #  发布
+    if ($rid -notlike "osx-*") {
+        Write-Host "开始发布 Base 版..." -ForegroundColor Cyan
+        dotnet @baseLaunchArgs
+    }
 
     Write-Host "开始发布 Bundled 版..." -ForegroundColor Cyan
     dotnet @bundledLaunchArgs
@@ -120,88 +133,61 @@ foreach ($rid in $runtimes) {
             Write-Host "警告: 未找到 Assets\icon.png，Linux 图标可能无法显示。" -ForegroundColor Red
         }
     }
+
     # ==========================================================
 
     # 在打包前，删除所有 .pdb 文件
-    Get-ChildItem -Path $baseOutput -Filter "*.pdb" | Remove-Item -Force
-    Get-ChildItem -Path $bundledOutput -Filter "*.pdb" | Remove-Item -Force
+    Get-ChildItem -Path $baseOutput -Filter "*.pdb" -ErrorAction SilentlyContinue | Remove-Item -Force
+    Get-ChildItem -Path $bundledOutput -Filter "*.pdb" -ErrorAction SilentlyContinue | Remove-Item -Force
 
-    # 4.4 打包 ZIP
+
+    #  win 的直接打包为 ZIP ，linux 和 mac 的单独处理
     if ($rid -like "win-*") {
         Compress-Archive -Path "$baseOutput\*" -DestinationPath $baseZip -Force
         Compress-Archive -Path "$bundledOutput\*" -DestinationPath $bundledZip -Force
     }
-
-    if ($rid -like "linux-*") {
-        Write-Host "使用 tar 打包 Linux 版本（保留权限）..." -ForegroundColor Cyan
-
-        # 1. 定义 tar 输出文件名
-        $baseTar = "$baseOutput.tar.gz"
-        $bundledTar = "$bundledOutput.tar.gz"
-
-        # 2. 转换路径为 WSL 风格
-        $wslBaseOutput = $baseOutput -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
-        $wslBundledOutput = $bundledOutput -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
-        $wslBaseTar = $baseTar -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
-        $wslBundledTar = $bundledTar -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
-
-        # 3. 设置执行权限
-        wsl chmod +x "$wslBaseOutput/$PROJ_NAME"
-        wsl chmod +x "$wslBundledOutput/$PROJ_NAME"
-        wsl chmod +x "$wslBaseOutput/$PROJ_NAME.desktop"
-        wsl chmod +x "$wslBundledOutput/$PROJ_NAME.desktop"
-
-        # 4. 打包为 .tar.gz（保留权限）
-        wsl tar -czf "$wslBaseTar" -C "$wslBaseOutput" .
-        wsl tar -czf "$wslBundledTar" -C "$wslBundledOutput" .
-
-        # 5. 删除未打包的目录
-        Remove-Item -Recurse -Force $baseOutput, $bundledOutput
-
-        Write-Host "✅ 已生成: $baseTar 和 $bundledTar" -ForegroundColor Green
-    }
-
-   
-
-
-    # 4.5 GitHub Release
-    # Write-Host "发布到 github ..." -ForegroundColor Cyan
-    # $tag = "v$version"
-    # git tag -f -m "Release $PROJ_NAME $version" $tag
-    # git push origin $tag --force
-    #
-    # gh release create $tag `
-    #      $baseZip `
-    #      $bundledZip `
-    #      --title "$PROJ_NAME $version" `
-    #      --notes "Release of $PROJ_NAME $version with both self-contained and dependent builds."
 }
 
 # ===========================================================================
-Write-Host "`n=== 正在调用独立的 macOS 打包脚本 ===" -ForegroundColor Cyan
-
-#  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$drive = $ScriptDir[0].ToString().ToLower()
-$wslScriptDir = "/mnt/$drive" + $ScriptDir.Substring(2) -replace '\\', '/'
-Write-Host "项目根目录 (WSL): $wslScriptDir"
-
-# 确保 PackageMacApp.sh 有执行权限（在 WSL 中）
-wsl chmod +x "$wslScriptDir/PackageMacApp.sh" 2>$null
-
-# 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
-wsl bash -c "cd '$wslScriptDir' && ./PackageMacApp.sh $version"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "⚠️ macOS 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
+if ($CI) {
+    Write-Host "CI环境，跳过WSL调用"
 }
 else {
-    Write-Host "✅ macOS 打包完成" -ForegroundColor Green
-    # 清理已经打包的 macOS 目录（如果需要保留，可以注释掉以下行）
-    Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-x64"
-    Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-arm64"
-    Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-x64-bundled"
-    Remove-Item -Recurse -Force "publish\$PROJ_NAME.$version.osx-arm64-bundled"
+    #  获取脚本所在目录的 WSL 路径（小写盘符，用于 cd）
+    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $drive = $ScriptDir[0].ToString().ToLower()
+    $wslScriptDir = "/mnt/$drive" + $ScriptDir.Substring(2) -replace '\\', '/'
+    Write-Host "项目根目录 (WSL): $wslScriptDir"
+
+    # ===============================
+    Write-Host "`n=== 本地环境,调用独立的 linux 打包脚本 ===" -ForegroundColor Cyan
+
+    # 确保 .sh 有执行权限（在 WSL 中）
+    wsl chmod +x "$wslScriptDir/PackageLinuxApp.sh" 2>$null
+    # 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
+    wsl bash -c "cd '$wslScriptDir' && ./PackageLinuxApp.sh $version"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "⚠️ linux 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
+    }
+    else {
+        Write-Host "✅ linux 打包完成" -ForegroundColor Green
+    }
+
+    # ===============================
+    Write-Host "`n=== 本地环境,调用独立的 macOS 打包脚本 ===" -ForegroundColor Cyan
+    
+    # 确保 PackageMacApp.sh 有执行权限（在 WSL 中）
+    wsl chmod +x "$wslScriptDir/PackageMacApp.sh" 2>$null
+
+    # 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
+    wsl bash -c "cd '$wslScriptDir' && ./PackageMacApp.sh $version"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "⚠️ macOS 打包脚本执行失败，退出码: $LASTEXITCODE" -ForegroundColor Red
+    }
+    else {
+        Write-Host "✅ macOS 打包完成" -ForegroundColor Green
+    }
 }
 
 
