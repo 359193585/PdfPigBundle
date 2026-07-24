@@ -31,12 +31,26 @@ jobs:
 
       - name: Get version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: No version found in tag name. Tag must start with 'v'."
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Publish base and bundled
         run: |
-          $rid = "${{ matrix.rid }}"
           $version = "${{ env.VERSION }}"
+          if (-not $version) {
+            Write-Error "Version is empty. Please check the tag format."
+            exit 1
+          }
+          Write-Host "Building version: $version"
+          # 以下为原有 publish 命令...
+          $rid = "${{ matrix.rid }}"
           $projFolder = "PdfPigBundle"
           $projName = "PDFMerger"
           $baseOutput = "publish/${projName}.${version}.${rid}"
@@ -47,13 +61,13 @@ jobs:
             "-c", "Release",
             "-r", $rid,
             "-p:Version=$version",
-            "-p:AssemblyVersion=${version}.0",
-            "-p:FileVersion=${version}.0",
+            "-p:AssemblyVersion=$version.0",
+            "-p:FileVersion=$version.0",
             "-p:InformationalVersion=$version"
           )
           $baseArgs += @("-p:ApplicationIcon=Assets/icon.ico")
 
-          # Base 版（依赖框架）
+          # Base 版
           dotnet @baseArgs `
             --self-contained false `
             -p:SelfContained=false `
@@ -62,7 +76,7 @@ jobs:
             -p:PublishReadyToRun=false `
             --output $baseOutput
 
-          # Bundled 版（自包含）
+          # Bundled 版
           dotnet @baseArgs `
             --self-contained true `
             -p:SelfContained=true `
