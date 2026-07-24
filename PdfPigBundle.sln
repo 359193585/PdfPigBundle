@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Publish", "Publish", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		make_release.ps1 = make_release.ps1
+		PackageLinuxApp.sh = PackageLinuxApp.sh
 		PackageMacApp.sh = PackageMacApp.sh
 		.github\workflows\release.yml = .github\workflows\release.yml
 		version_patch.txt = version_patch.txt

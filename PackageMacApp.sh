@@ -11,7 +11,6 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-# ---------- 定义名称 ----------
 PROJECT_DIR_NAME="PdfPigBundle"   # 项目文件夹名（用于定位源代码和发布路径）
 APP_NAME="PDFMerger"              # 最终应用名称（用户看到的名称）
 BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID 
@@ -19,30 +18,20 @@ BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID
 echo "📌 版本号: $VERSION"
 
 # ---------- 查找发布目录 ----------
-POSSIBLE_PATHS=(
-    "./publish"
-    "/mnt/e/Develop_Vs2022/${PROJECT_DIR_NAME}/publish"
-)
 
-PUBLISH_BASE=""
-for path in "${POSSIBLE_PATHS[@]}"; do
-    if [ -d "$path" ] && ls "$path"/${APP_NAME}.*.osx-*-bundled 1>/dev/null 2>&1; then
-        PUBLISH_BASE="$path"
-        echo "✅ 找到发布目录: $PUBLISH_BASE"
-        break
-    fi
-done
-
-if [ -z "$PUBLISH_BASE" ]; then
-    echo "❌ 未找到任何包含 ${APP_NAME}.*.osx-*-bundled 的发布目录"
-    echo "请检查路径: ${POSSIBLE_PATHS[@]}"
+PUBLISH_BASE="./publish"
+if [ ! -d "$PUBLISH_BASE" ]; then
+    echo "❌ 发布目录不存在: $PUBLISH_BASE"
     exit 1
 fi
 
-
+if ! ls "$PUBLISH_BASE"/${APP_NAME}.*.osx-*-bundled 1>/dev/null 2>&1; then
+    echo "❌ 未找到任何 osx-*-bundled 目录，请先运行 dotnet publish"
+    exit 1
+fi
 
 # ---------- 输出目录 ----------
-OUTPUT_DIR="/mnt/e/Develop_Vs2022/${PROJECT_DIR_NAME}/publish"
+OUTPUT_DIR="./publish"
 mkdir -p "$OUTPUT_DIR"
 
 # ---------- 打包各架构 ----------
@@ -54,7 +43,7 @@ for ARCH in "${ARCH_LIST[@]}"; do
 
     RID="osx-$ARCH"
 
-    # 查找对应架构的 bundled 目录（使用新名称）
+    # 查找对应架构的 bundled 目录
     BUNDLED_DIR=$(ls -td "$PUBLISH_BASE"/${APP_NAME}.*.${RID}-bundled 2>/dev/null | head -1)
     if [ -z "$BUNDLED_DIR" ]; then
         echo "⚠️ 未找到 $RID 发布目录，跳过..."
