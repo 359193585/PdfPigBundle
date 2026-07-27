@@ -128,10 +128,36 @@ jobs:
         shell: bash
 
       # ---------- 上传产物 ----------
+      - name: Debug version
+        run: echo "Version is ${{ env.VERSION }}"
+        shell: bash
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.rid }}-packages
+          name: ${{ matrix.rid }}-v${{ env.VERSION }}
           path: |
-            publish/*.zip
             publish/*.tar.gz
+            publish/*.zip
+
+release:
+  name: Create Release
+  needs: build
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+  steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./artifacts/**/*.tar.gz
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
