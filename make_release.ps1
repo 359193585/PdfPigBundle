@@ -99,7 +99,7 @@ foreach ($rid in $runtimes) {
         "-p:PublishReadyToRun=false",
         "--output", $bundledOutput
     )
-    #  发布
+    #  发布 osx 不发布base版
     if ($rid -notlike "osx-*") {
         Write-Host "开始发布 Base 版..." -ForegroundColor Cyan
         dotnet @baseLaunchArgs
@@ -107,32 +107,6 @@ foreach ($rid in $runtimes) {
 
     Write-Host "开始发布 Bundled 版..." -ForegroundColor Cyan
     dotnet @bundledLaunchArgs
-
-
-    # ==========  为 Linux 添加 .desktop 文件和图标 ==========
-    if ($rid -like "linux-*") {
-        # 复制 .desktop 文件
-        $desktopSource = "$PROJ_FOLDER\BuildAssets\Linux\$PROJ_NAME.desktop"
-        if (Test-Path $desktopSource) {
-            Copy-Item $desktopSource -Destination $baseOutput -Force
-            Copy-Item $desktopSource -Destination $bundledOutput -Force
-            Write-Host "已复制 $PROJ_NAME.desktop 到 Linux 发布目录" -ForegroundColor Yellow
-        }
-        else {
-            Write-Host "警告: 未找到 $PROJ_NAME.desktop 文件，Linux 桌面集成将不完整。" -ForegroundColor Red
-        }
-
-        # 复制图标文件（使用 Assets/icon.png）
-        $iconSource = "$PROJ_FOLDER\Assets\icon.png"
-        if (Test-Path $iconSource) {
-            Copy-Item $iconSource -Destination "$baseOutput\icon.png" -Force
-            Copy-Item $iconSource -Destination "$bundledOutput\icon.png" -Force
-            Write-Host "已复制 icon.png 到 Linux 发布目录" -ForegroundColor Yellow
-        }
-        else {
-            Write-Host "警告: 未找到 Assets\icon.png，Linux 图标可能无法显示。" -ForegroundColor Red
-        }
-    }
 
     # ==========================================================
 
@@ -164,6 +138,7 @@ else {
 
     # 确保 .sh 有执行权限（在 WSL 中）
     wsl chmod +x "$wslScriptDir/PackageLinuxApp.sh" 2>$null
+
     # 在 WSL 中切换到项目根目录，然后执行脚本（传递版本号）
     wsl bash -c "cd '$wslScriptDir' && ./PackageLinuxApp.sh $version"
     if ($LASTEXITCODE -ne 0) {

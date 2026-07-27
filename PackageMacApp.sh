@@ -1,6 +1,7 @@
 #!/bin/bash
 # run in wsl2 ubuntu 22.04 ,do not run in windows powershell
-# 用法: ./PackageMacApp.sh 版本号
+# 用法: ./PackageMacApp.sh [版本号]
+#       ./PackageMacApp.sh 1.2.3
 
 echo "mac app publishing (both arm64 and x86 )..."
 set -e
@@ -122,8 +123,8 @@ EOF
     echo "📦 最终产物: $TAR_NAME"
 
     # 清理临时目录（可选）
-    rm -rf "$WORK_DIR"
-    echo "🧹 临时目录 $WORK_DIR 已清理"
+    #rm -rf "$WORK_DIR"
+    #echo "🧹 临时目录 $WORK_DIR 已清理"
 
     # 清理原始目录
     rm -rf "$BUNDLED_DIR"
