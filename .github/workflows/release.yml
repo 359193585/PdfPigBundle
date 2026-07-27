@@ -20,6 +20,8 @@ jobs:
             rid: osx-arm64
           - os: ubuntu-latest
             rid: linux-x64
+          - os: ubuntu-latest
+            rid: linux-arm64
       fail-fast: false
 
     steps:
