@@ -7,11 +7,12 @@
 ## ✨ 功能特点
 
 - **多文件合并**：支持任意数量的 PDF 文件合并为一个。
+- **PDF和图片混合合并**：支持任意数量的 PDF 文件和图片合并为一个PDF输出。
 - **书签保留与增强**：
   - 如果源文件已有书签，合并后保留完整层级结构。
   - 以 **源文件名** 作为一级书签目录，原书签自动降级为其子节点（方便快速定位）。
 - **元数据设置**：可自定义输出文件的作者、标题、主题等信息。
-- **重复文件智能过滤**：可选择忽略重复添加的文件。
+- **重复文件智能过滤/或允许**：可选择的忽略重复添加文件或允许重复文件。
 - **实时进度反馈**：图形界面显示合并进度。
 - **跨平台支持**：Windows、macOS（Intel + Apple Silicon）、Linux（x64 + ARM64）。
 - **纯离线运行**：无需联网，数据不上传，保障隐私安全。
@@ -35,7 +36,7 @@
 ### 图形界面 (GUI)
   
 <div align="center">
-    <img width="802" height="632" alt="image" src="https://github.com/user-attachments/assets/46d6d923-1358-41b3-83a1-35ca7ad5ce8a" />
+   <img width="1007" height="668" alt="Snipaste_2026-07-23_10-44-57" src="https://github.com/user-attachments/assets/34f7ce70-b28c-457a-b9ba-cac2b345f4f1" />
 </div>
 
 
@@ -54,14 +55,19 @@
 - 前往 Releases 页面下载适合您系统的压缩包：
 
   - PdfMerger-win-x64.zip – Windows 64位
+  - PDFMerger.1.2.0.win-x64-bundled.zip Windows 64位自包含运行时版
+  
+  - PDFMerger.1.2.0.macos-x64.app.tar.gz – macOS Intel
 
-  - PdfMerger-osx-x64.zip – macOS Intel
+  - PDFMerger.1.2.0.macos-arm64.app.tar.gz – macOS Apple Silicon
 
-  - PdfMerger-osx-arm64.zip – macOS Apple Silicon
-
-  - PdfMerger-linux-x64.zip – Linux 64位
-
-  - PdfMerger-linux-arm64.zip – Linux ARM64 (信创设备)
+  - PDFMerger.1.2.0.linux-x64.tar.gz – Linux 64位
+  
+  - PDFMerger.1.2.0.linux-x64-bundled.tar.gz -Linux 64位自包含运行时版
+   
+  - PDFMerger.1.2.0.linux-arm64.tar.gz – Linux ARM64 (信创设备)
+  
+  - PDFMerger.1.2.0.linux-arm64-bundled.tar.gz – Linux ARM64 (信创设备)自包含运行时版
 
 - 解压后，直接双击 PdfMerger 即可运行（Linux/macOS 可能需要授予执行权限）。
 
