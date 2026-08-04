@@ -189,9 +189,11 @@ namespace PdfPigBundle.ViewModel
                 // 当所有文件处理完成后，更新状态（也在 UI 线程）
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    StatusMessage = $"已加载 {FileItems.Count} 个文件";
                     UpdateCanMerge();
                     UpdateDefaultSubject();
+                    StatusMessage = FileItems.Count > 0
+            ? $"已加载 {FileItems.Count} 个文件"
+            : "列表为空";
                 });
             });
         }
@@ -209,9 +211,12 @@ namespace PdfPigBundle.ViewModel
         {
             FileItems.Clear();
             OutputPath = "";
-            StatusMessage = "列表已清空";
             UpdateCanMerge();
             UpdateDefaultSubject();
+            StatusMessage = FileItems.Count > 0
+           ? $"已加载 {FileItems.Count} 个文件"
+           : "列表为空";
+
         }
 
         // ---------- 上移 ----------
@@ -254,6 +259,10 @@ namespace PdfPigBundle.ViewModel
                 UpdateCanMerge();
                 (MoveUpCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (MoveDownCommand as RelayCommand)?.RaiseCanExecuteChanged();
+
+                StatusMessage = FileItems.Count > 0
+            ? $"已加载 {FileItems.Count} 个文件"
+            : "列表为空";
             }
         }
         private bool CheckAndCleanMissingFiles()

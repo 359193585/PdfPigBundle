@@ -1,8 +1,12 @@
+//ImageToPdfPageConverter.cs
 using System;
 using System.IO;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace PdfPigBundle.Services
 {
@@ -71,8 +75,26 @@ namespace PdfPigBundle.Services
             if (!File.Exists(imagePath))
                 throw new FileNotFoundException("图片文件不存在", imagePath);
 
-            using (var stream = File.OpenRead(imagePath))
-                return ConvertImageToPdfDocument(stream, mode, customWidth, customHeight);
+            bool isJpg = imagePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                imagePath.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase);
+            try
+            {
+
+                using (var stream = File.OpenRead(imagePath))
+                    return ConvertImageToPdfDocument(stream, mode, customWidth, customHeight);
+            }
+            catch (Exception) when (isJpg) //如果失败,且文件是 JPG 格式
+            {
+                using (var ms = new MemoryStream())
+                {
+                    using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath))
+                    {
+                        image.Save(ms, new PngEncoder());
+                        ms.Position = 0;
+                        return ConvertImageToPdfDocument(ms, mode, customWidth, customHeight);
+                    }
+                }
+            }
         }
 
         // ---------- 从字节数组转换 ----------
