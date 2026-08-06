@@ -5,10 +5,8 @@
 A concise, free, cross-platform PDF merging tool that supports retaining the original bookmark directory structure and automatically generates file names as first-level directories. It features no ads, no pop-ups, and no watermarks, designed specifically for efficient office work and trusted computing environments.
 
 > 🚀 ​​No installation required, ready to use after decompression
-> ​
-> 👉 Download Now (GitHub Releases)
-> 
-> 👉 Domestic Mirror Download (Gitee Releases) 
+> 👉 [Download Now (GitHub Releases)](https://github.com/359193585/PdfPigBundle/releases)  
+> 👉 [Domestic Mirror Download (Gitee Releases)](https://gitee.com/leison01010101/PdfPigBundle/releases)
 
 
 ---
@@ -28,12 +26,12 @@ A concise, free, cross-platform PDF merging tool that supports retaining the ori
 
 ## 🖥️ System Requirements
 ​​- **Operating System​​**:
- - Windows 10 / 11 
- - macOS 10.15+ (Intel / Apple Silicon)
- - Linux (Ubuntu 20.04+, UnionTech UOS, Kylin KOS, etc.)
+  - Windows 10 / 11 
+  - macOS 10.15+ (Intel / Apple Silicon)
+  - Linux (Ubuntu 20.04+, UnionTech UOS, Kylin KOS, etc.)
    
 ​​- **CPU Architecture​​**: x64, ARM64
- - No .NET runtime installation required (self-contained version)
+  - No .NET runtime installation required (self-contained version)
   
 ## 🚀 Usage Instructions
 
@@ -59,7 +57,7 @@ A concise, free, cross-platform PDF merging tool that supports retaining the ori
 
 ## Pre-compiled Packages
 
- - Go to the Releases page to download the compressed package suitable for your system:
+- Go to the Releases page to download the compressed package suitable for your system:
   - PdfMerger-win-x64.zip – Windows 64-bit
   - PDFMerger.1.2.0.win-x64-bundled.zip – Windows 64-bit self-contained runtime version
   - PDFMerger.1.2.0.macos-x64.app.tar.gz – macOS Intel
@@ -69,7 +67,7 @@ A concise, free, cross-platform PDF merging tool that supports retaining the ori
   - PDFMerger.1.2.0.linux-arm64.tar.gz – Linux ARM64 (trusted computing devices)
   - PDFMerger.1.2.0.linux-arm64-bundled.tar.gz – Linux ARM64 (trusted computing devices) self-contained runtime version
 
- - After decompression, double-click PdfMerger to run directly (Linux/macOS may require granting execution permissions).
+- After decompression, double-click PdfMerger to run directly (Linux/macOS may require granting execution permissions).
 
 # 🛠️ Developer Guide
 ## Environment Requirements
@@ -97,17 +95,21 @@ Q: The PDF directory bookmarks cannot be displayed in Chrome or Edge browsers af
 
 A: Some browsers may not support PDF bookmarks. Please use professional readers such as Adobe Acrobat Reader or PDF Expert to view.
 
+
 Q: Can encrypted PDFs be merged?
 
 A: Currently, encrypted PDFs are not supported. A password input function may be added in the future.
+
 
 Q: Does the software require internet connection?
 
 A: It is fully offline, requires no internet connection, and will not upload any files.
 
+
 Q: Why can't my Apple Silicon Mac run the software?
 
 A: Please download the -osx-arm64 version to ensure you are using the package matching the corresponding architecture.
+
 
 📧 Contact
 For business cooperation or customization requirements, please contact us via GitHub Issues.
