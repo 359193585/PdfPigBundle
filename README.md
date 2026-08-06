@@ -1,6 +1,11 @@
-# 📄 PDF 合并工具 (PDF Merger)
+# 📄 PDFMerger - 免费、离线、跨平台 PDF 合并工具
 
-一款简洁、免费、跨平台的 PDF 合并工具，支持保留原始书签目录结构，并自动生成文件名为一级目录。无广告、无弹窗、无水印，专为高效办公和信创环境打造。
+一款简洁、免费、跨平台 PDF 合并工具，支持保留原始书签目录结构，并自动生成文件名为一级目录。无广告、无弹窗、无水印，专为高效办公和信创环境打造。
+
+> 🚀 **无需安装，解压即用**  
+> 👉 [立即下载 (GitHub Releases)](https://github.com/359193585/PdfPigBundle/releases)  
+> 👉 [国内镜像下载 (Gitee Releases)](https://gitee.com/leison01010101/PdfPigBundle/releases)
+
 
 ---
 
