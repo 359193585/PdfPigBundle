@@ -1,4 +1,4 @@
-# **English**· [中文](https://github.com/359193585/PdfPigBundle/edit/main/README.zh-CN.md)
+# **English** · [中文](https://github.com/359193585/PdfPigBundle/edit/main/README.zh-CN.md)
 
 # 📄 PDFMerger - Free, Offline, Cross-platform PDF Merging Tool
 
