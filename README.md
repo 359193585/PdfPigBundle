@@ -4,34 +4,34 @@
 
 A concise, free, cross-platform PDF merging tool that supports retaining the original bookmark directory structure and automatically generates file names as first-level directories. It features no ads, no pop-ups, and no watermarks, designed specifically for efficient office work and trusted computing environments.
 
-> 🚀 ​​No installation required, ready to use after decompression
-> 👉 [Download Now (GitHub Releases)](https://github.com/359193585/PdfPigBundle/releases)  
-> 👉 [Domestic Mirror Download (Gitee Releases)](https://gitee.com/leison01010101/PdfPigBundle/releases)
+ > 🚀 ​​No installation required, ready to use after decompression
+ > 👉 [Download Now (GitHub Releases)](https://github.com/359193585/PdfPigBundle/releases)  
+ > 👉 [Domestic Mirror Download (Gitee Releases)](https://gitee.com/leison01010101/PdfPigBundle/releases)
 
 
 ---
 
 ## ✨ Key Features
-​​- **Multi-file Merging​**​: Supports merging any number of PDF files into one.
-​- **​Mixed Merging of PDFs and Images​**​: Supports merging any number of PDF files and images into a single PDF output.
-​​- **Bookmark Retention and Enhancement​**​:
- - If the source file already has bookmarks, the complete hierarchy will be retained after merging.
- - The ​​source file name​​ is used as the first-level bookmark directory, and the original bookmarks are automatically demoted to its sub-nodes (for quick positioning).
-​​- *Metadata Configuration​​**: Customizable author, title, subject and other information of the output file.
-- **​Smart Duplicate File Filtering/Allowance​**​: Option to ignore duplicate added files or allow duplicate files.
-​​- **Real-time Progress Feedback​**​: The graphical interface displays the merging progress.
-​- **​Cross-platform Support​​**: Windows, macOS (Intel + Apple Silicon), Linux (x64 + ARM64).
-​​- **Fully Offline Operation**​​: No internet connection required, no data upload, ensuring privacy and security.
-​​- **Clean and Distraction-free**​​: No ads, no membership, no usage restrictions.
+​​ - **Multi-file Merging​**​: Supports merging any number of PDF files into one.
+​ - **​Mixed Merging of PDFs and Images​**​: Supports merging any number of PDF files and images into a single PDF output.
+​​ - **Bookmark Retention and Enhancement​**​:
+  - If the source file already has bookmarks, the complete hierarchy will be retained after merging.
+  - The ​​source file name​​ is used as the first-level bookmark directory, and the original bookmarks are automatically demoted to its sub-nodes (for quick positioning).
+​​ - *Metadata Configuration​​**: Customizable author, title, subject and other information of the output file.
+ - **​Smart Duplicate File Filtering/Allowance​**​: Option to ignore duplicate added files or allow duplicate files.
+​​ - **Real-time Progress Feedback​**​: The graphical interface displays the merging progress.
+​ - **​Cross-platform Support​​**: Windows, macOS (Intel + Apple Silicon), Linux (x64 + ARM64).
+​​ - **Fully Offline Operation**​​: No internet connection required, no data upload, ensuring privacy and security.
+​​ - **Clean and Distraction-free**​​: No ads, no membership, no usage restrictions.
 
 ## 🖥️ System Requirements
-​​- **Operating System​​**:
-  - Windows 10 / 11 
-  - macOS 10.15+ (Intel / Apple Silicon)
-  - Linux (Ubuntu 20.04+, UnionTech UOS, Kylin KOS, etc.)
+​​ - **Operating System​​**:
+   - Windows 10 / 11 
+   - macOS 10.15+ (Intel / Apple Silicon)
+   - Linux (Ubuntu 20.04+, UnionTech UOS, Kylin KOS, etc.)
    
-​​- **CPU Architecture​​**: x64, ARM64
-  - No .NET runtime installation required (self-contained version)
+​​ - **CPU Architecture​​**: x64, ARM64
+   - No .NET runtime installation required (self-contained version)
   
 ## 🚀 Usage Instructions
 
@@ -57,15 +57,15 @@ A concise, free, cross-platform PDF merging tool that supports retaining the ori
 
 ## Pre-compiled Packages
 
-- Go to the Releases page to download the compressed package suitable for your system:
-  - PdfMerger-win-x64.zip – Windows 64-bit
-  - PDFMerger.1.2.0.win-x64-bundled.zip – Windows 64-bit self-contained runtime version
-  - PDFMerger.1.2.0.macos-x64.app.tar.gz – macOS Intel
-  - PDFMerger.1.2.0.macos-arm64.app.tar.gz – macOS Apple Silicon
-  - PDFMerger.1.2.0.linux-x64.tar.gz – Linux 64-bit
-  - PDFMerger.1.2.0.linux-x64-bundled.tar.gz – Linux 64-bit self-contained runtime version
-  - PDFMerger.1.2.0.linux-arm64.tar.gz – Linux ARM64 (trusted computing devices)
-  - PDFMerger.1.2.0.linux-arm64-bundled.tar.gz – Linux ARM64 (trusted computing devices) self-contained runtime version
+ - Go to the Releases page to download the compressed package suitable for your system:
+   - PdfMerger-win-x64.zip – Windows 64-bit
+   - PDFMerger.1.2.0.win-x64-bundled.zip – Windows 64-bit self-contained runtime version
+   - PDFMerger.1.2.0.macos-x64.app.tar.gz – macOS Intel
+   - PDFMerger.1.2.0.macos-arm64.app.tar.gz – macOS Apple Silicon
+   - PDFMerger.1.2.0.linux-x64.tar.gz – Linux 64-bit
+   - PDFMerger.1.2.0.linux-x64-bundled.tar.gz – Linux 64-bit self-contained runtime version
+   - PDFMerger.1.2.0.linux-arm64.tar.gz – Linux ARM64 (trusted computing devices)
+   - PDFMerger.1.2.0.linux-arm64-bundled.tar.gz – Linux ARM64 (trusted computing devices) self-contained runtime version
 
 - After decompression, double-click PdfMerger to run directly (Linux/macOS may require granting execution permissions).
 
