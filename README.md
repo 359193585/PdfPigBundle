@@ -1,3 +1,4 @@
+# English · [中文](https://github.com/359193585/PdfPigBundle/edit/main/README.zh-CN.md)
 # 📄 PDFMerger - 免费、离线、跨平台 PDF 合并工具
 
 一款简洁、免费、跨平台 PDF 合并工具，支持保留原始书签目录结构，并自动生成文件名为一级目录。无广告、无弹窗、无水印，专为高效办公和信创环境打造。
@@ -119,12 +120,12 @@ A: 请下载 -osx-arm64 版本，确保您使用的是对应架构的包。
 
 
 # 注意 Note：
-- 🛡️ macOS 版程序没有数字签名，如果你从github release 下载了该 tar.gz 包，解压后，macOS会系统会自动给该文件添加一个名为 com.apple.quarantine 的扩展属性，即“来源不明”的标签。The macOS version of the program is not digitally signed. If you downloaded the tar.gz package from the GitHub Release, after extraction, macOS will automatically add an extended attribute named com.apple.quarantine to the file, which is the "unknown origin" tag.
+- 🛡️ The macOS version of the program is not digitally signed. If you downloaded the tar.gz package from the GitHub Release, after extraction, macOS will automatically add an extended attribute named com.apple.quarantine to the file, which is the "unknown origin" tag.
 
-- 当你尝试运行带有此标签的应用时，Gatekeeper 会进行更严格的安全检查。When you try to run an application with this tag, Gatekeeper will perform stricter security checks.
-- 对于未通过 Apple 公证（Notarization）的应用，系统就会弹出“已损坏，无法打开”的提示。For applications that have not passed Apple Notarization, the system will pop up a prompt saying "is damaged and can't be opened".
-- 这个问题本质上是安全机制导致的“假损坏”，而非文件真的坏了。This issue is essentially "false damage" caused by the security mechanism, not that the file is actually broken.
-- 你可以移除隔离属性，在终端中，针对单个 .app 文件，使用 xattr 命令移除该属性。You can remove the quarantine attribute by using the xattr command in the terminal for a single .app file to remove this attribute.
+- When you try to run an application with this tag, Gatekeeper will perform stricter security checks.
+- For applications that have not passed Apple Notarization, the system will pop up a prompt saying "is damaged and can't be opened".
+- This issue is essentially "false damage" caused by the security mechanism, not that the file is actually broken.
+- You can remove the quarantine attribute by using the xattr command in the terminal for a single .app file to remove this attribute.
 ```
 xattr -d com.apple.quarantine /path/to/PDFMerger.app
 ```
