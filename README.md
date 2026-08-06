@@ -113,7 +113,7 @@ Q: Why can't my Apple Silicon Mac run the software?
 A: Please download the -osx-arm64 version to ensure you are using the package matching the corresponding architecture.
 
 
-📧 Contact
+# 📧 Contact
 For business cooperation or customization requirements, please contact us via GitHub Issues.
 
 # Note：
