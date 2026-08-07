@@ -82,7 +82,9 @@
                   Background="White"
                   BorderBrush="#DDD"
                   BorderThickness="1"
-                  CornerRadius="8">
+                  CornerRadius="8"
+                 >
+
             <DataGrid.Styles>
                 <Style Selector="DataGridCell">
                     <Setter Property="FontSize" Value="12" />

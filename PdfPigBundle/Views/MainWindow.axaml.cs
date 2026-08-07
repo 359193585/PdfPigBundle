@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia;
+using PdfPigBundle.Models;
 using PdfPigBundle.ViewModel;
 
 namespace PdfPigBundle.Views
@@ -122,7 +122,7 @@ namespace PdfPigBundle.Views
             await App.ShowAboutDialogAsync();
         }
 
-        // ---------- 拖放（DragOver） ----------
+        // ---------- file DragOver ----------
         private void OnDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
@@ -132,7 +132,7 @@ namespace PdfPigBundle.Views
                 e.DragEffects = DragDropEffects.None;
         }
 
-        // ---------- 拖放（Drop） ----------
+        // ---------- file Drop ----------
         private void OnDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
@@ -181,5 +181,90 @@ namespace PdfPigBundle.Views
 
            
         }
+
+        #region Drag and Drop for DataGrid
+        //private async void OnDataGridPointerPressed(object? sender, PointerPressedEventArgs e)
+        //{
+        //    var point = e.GetCurrentPoint(sender as Visual);
+        //    if (point.Properties.IsLeftButtonPressed)
+        //    {
+        //        var dataGrid = sender as DataGrid;
+        //        if (dataGrid?.SelectedItem is FileItem fileItem)
+        //        {
+        //            // 使用 DataTransfer 存储数据
+        //           // var data = new DataTransfer();
+        //            var data = new DataObject();
+        //            data.Set("FileItem", fileItem);
+
+        //            // 获取 TopLevel 并启动拖放
+        //            var topLevel = TopLevel.GetTopLevel(dataGrid);
+        //            if (topLevel != null)
+        //            {
+        //                // 异步启动拖放，并等待结果（可选）
+        //                var result = await topLevel.DragDrop.StartAsync(data, DragDropEffects.Move);
+        //                // 可以根据 result 执行后续操作（如改变光标等）
+        //            }
+        //        }
+        //    }
+
+        //}
+        //private void OnDataGridDragOver(object sender, DragEventArgs e)
+        //{
+        //    e.Handled = true;
+        //    // 使用 Any() 和 ToString() 比较
+        //    if (e.DataTransfer.Formats.Any(f => f == DataFormat.File))
+        //        e.DragEffects = DragDropEffects.Copy;
+        //    else if (e.DataTransfer.Formats.Any(f => f.ToString() == "FileItem"))
+        //        e.DragEffects = DragDropEffects.Move;
+        //    else
+        //        e.DragEffects = DragDropEffects.None;
+        //}
+
+        //private void OnDataGridDrop(object sender, DragEventArgs e)
+        //{
+        //    e.Handled = true;
+
+        //    //  外部文件拖放
+        //    if (e.DataTransfer.Formats.Contains(DataFormat.File))
+        //    {
+        //        var files = e.DataTransfer.TryGetFiles();
+        //        if (files != null && files.Any())
+        //        {
+        //            var filePaths = files.Select(f => f.Path.LocalPath).ToArray();
+        //            if (DataContext is MainWindowViewModel vm)
+        //            {
+        //                vm.AddFiles(filePaths);
+        //            }
+        //        }
+        //        return; 
+        //    }
+
+        //    // 内部行拖拽
+        //    if (e.DataTransfer.Formats.Any(f => f.ToString() == "FileItem"))
+        //    {
+        //        var draggedItem = e.DataTransfer.Get("FileItem") as FileItem;
+        //        if (draggedItem == null) return;
+
+        //        var targetRow = FindParent<DataGridRow>(e.Source as Visual);
+        //        if (targetRow?.DataContext is FileItem targetItem)
+        //        {
+        //            var vm = DataContext as MainWindowViewModel;
+        //            vm?.MoveFileItem(draggedItem, targetItem);
+        //        }
+        //    }
+        //}
+       
+
+        //private static T? FindParent<T>(Visual? visual) where T : Visual
+        //{
+        //    while (visual != null)
+        //    {
+        //        if (visual is T t)
+        //            return t;
+        //        visual = visual.Parent as Visual;
+        //    }
+        //    return null;
+        //}
+        #endregion
     }
 }

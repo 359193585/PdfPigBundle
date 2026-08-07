@@ -156,15 +156,31 @@ namespace PdfPigBundle.ViewModel
                         // 读取信息（PDF 读取页数、作者；图片可以不读或读尺寸，但暂时保留简单信息）
                         try
                         {
-                            if (item.Type == FileType.Pdf)
+                            if (item.Type == FileType.Pdf) // pdf file
                             {
-                                using (var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import))
+                                try
                                 {
-                                    item.PageCount = doc.PageCount;
-                                    item.Author = doc.Info.Author ?? "";
+                                    using (var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import))
+                                    {
+                                        item.PageCount = doc.PageCount;
+                                        item.Author = doc.Info.Author ?? "";
+                                    }
+                                }
+                                catch (PdfReaderException ex)
+                                {
+                                    if (ex.Message.Contains("password") || ex.Message.Contains("encrypted"))
+                                    {
+                                        item.IsEncrypted = true;
+                                        item.Author = "❌加密文档无法合并";
+                                        item.PageCount = 0;
+                                    }
+                                    else
+                                    {
+                                        throw; // other errors, rethrow to be caught by outer catch
+                                    }
                                 }
                             }
-                            else
+                            else  // image file
                             {
                                 // 图片：页数设为1，作者设为"图片"
                                 item.PageCount = 1;
@@ -351,6 +367,13 @@ namespace PdfPigBundle.ViewModel
                     Creator = DocCreator,
                     AddPageNumbers = AddPageNumbers
                 };
+
+                if (CheckEncryptedFiles())
+                {
+                    StatusMessage = "❌已检测到加密文件，无法合并，请删除加密文件。";
+                    return;
+                }
+
                 var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
 
 
@@ -375,6 +398,16 @@ namespace PdfPigBundle.ViewModel
             }
         }
 
+        private bool CheckEncryptedFiles()
+        {
+            var encrypted = FileItems.Where(f => f.IsEncrypted).ToList();
+            if (encrypted.Any())
+            {
+                ShowMessageRequested?.Invoke(this, $"以下文件已加密，无法合并：{string.Join(", ", encrypted.Select(f => f.FileName))}");
+                return true;
+            }
+            return false;
+        }
         private void UpdateDefaultSubject()
         {
             if (_isSubjectManuallySet) return; // 如果用户已手动修改，不覆盖
@@ -432,6 +465,19 @@ namespace PdfPigBundle.ViewModel
         {
             get => _addPageNumbers;
             set => SetProperty(ref _addPageNumbers, value);
+        }
+        #endregion
+
+        #region datagrid dragover and drop operate
+        public void MoveFileItem(FileItem dragged, FileItem target)
+        {
+            int oldIndex = FileItems.IndexOf(dragged);
+            int newIndex = FileItems.IndexOf(target);
+            if (oldIndex != newIndex && oldIndex >= 0 && newIndex >= 0)
+            {
+                FileItems.Move(oldIndex, newIndex);
+                SelectedItem = FileItems[newIndex];
+            }
         }
         #endregion
     }

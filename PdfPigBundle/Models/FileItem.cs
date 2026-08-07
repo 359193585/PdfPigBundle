@@ -49,6 +49,7 @@ namespace PdfPigBundle.Models
             set => SetProperty(ref _type, value);
         }
 
+        public bool IsEncrypted { get; set; } = false;
         public bool IsImage => Type == FileType.Image;
        
 
