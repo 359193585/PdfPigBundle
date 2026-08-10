@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,8 +22,7 @@ namespace PdfPigBundle.ViewModel
         private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
         public event EventHandler<string> ShowMessageRequested = delegate { };
 
-        public ObservableCollection<FileItem> FileItems { get; } = new ObservableCollection<FileItem>();
-
+       
         private string _outputPath = string.Empty;
         public string OutputPath
         {
@@ -469,14 +469,22 @@ namespace PdfPigBundle.ViewModel
         #endregion
 
         #region datagrid dragover and drop operate
+        public ObservableCollection<FileItem> FileItems { get; } = new ObservableCollection<FileItem>();
         public void MoveFileItem(FileItem dragged, FileItem target)
         {
             int oldIndex = FileItems.IndexOf(dragged);
             int newIndex = FileItems.IndexOf(target);
+            Debug.WriteLine($"MoveFileItem: oldIndex={oldIndex}, newIndex={newIndex}");
             if (oldIndex != newIndex && oldIndex >= 0 && newIndex >= 0)
             {
-                FileItems.Move(oldIndex, newIndex);
-                SelectedItem = FileItems[newIndex];
+                int adjustedNewIndex = (oldIndex < newIndex) ? newIndex - 1 : newIndex;
+                FileItems.RemoveAt(oldIndex);
+                FileItems.Insert(adjustedNewIndex, dragged);
+                SelectedItem = FileItems[adjustedNewIndex];
+
+                var names = string.Join(", ", FileItems.Select(x => x.FileName));
+                Debug.WriteLine($"After Move: {names}");
+
             }
         }
         #endregion

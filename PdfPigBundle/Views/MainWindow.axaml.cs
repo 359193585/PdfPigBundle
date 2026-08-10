@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia;
 using PdfPigBundle.Models;
@@ -26,6 +28,17 @@ namespace PdfPigBundle.Views
                 var box = MessageBoxManager.GetMessageBoxStandard("提示", msg);
                 await box.ShowAsync();
             };
+
+
+            // ----- 为 DataGrid 启用拖放功能  -----
+            DragDrop.SetAllowDrop(FileDataGrid, true);
+
+            FileDataGrid.AddHandler(PointerPressedEvent, OnDataGridPointerPressed, RoutingStrategies.Tunnel);
+            FileDataGrid.AddHandler(PointerMovedEvent, OnDataGridPointerMoved, RoutingStrategies.Tunnel);
+            FileDataGrid.AddHandler(PointerReleasedEvent, OnDataGridPointerReleased, RoutingStrategies.Tunnel);
+            FileDataGrid.AddHandler(DragDrop.DragOverEvent, OnDataGridDragOver);
+            FileDataGrid.AddHandler(DragDrop.DropEvent, OnDataGridDrop);
+
 
         }
       
@@ -183,88 +196,120 @@ namespace PdfPigBundle.Views
         }
 
         #region Drag and Drop for DataGrid
-        //private async void OnDataGridPointerPressed(object? sender, PointerPressedEventArgs e)
-        //{
-        //    var point = e.GetCurrentPoint(sender as Visual);
-        //    if (point.Properties.IsLeftButtonPressed)
-        //    {
-        //        var dataGrid = sender as DataGrid;
-        //        if (dataGrid?.SelectedItem is FileItem fileItem)
-        //        {
-        //            // 使用 DataTransfer 存储数据
-        //           // var data = new DataTransfer();
-        //            var data = new DataObject();
-        //            data.Set("FileItem", fileItem);
+        private static readonly DataFormat<FileItem> FileItemFormat =
+     DataFormat.CreateInProcessFormat<FileItem>("FileItem");
+        private Point? _dragStartPoint;
+        private FileItem? _dragItem;
+        private PointerPressedEventArgs? _dragPressedArgs;
+        private void OnDataGridPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as Visual).Properties.IsLeftButtonPressed)
+            {
+                _dragStartPoint = e.GetPosition(sender as Visual);
+                _dragItem = (sender as DataGrid)?.SelectedItem as FileItem;
+                _dragPressedArgs = e;  // 保存事件参数
+                Debug.WriteLine($"  Selected: {_dragItem?.FileName}");
+            }
+        }
+        private async void OnDataGridPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (_dragStartPoint == null || _dragItem == null || _dragPressedArgs == null)
+                return;
 
-        //            // 获取 TopLevel 并启动拖放
-        //            var topLevel = TopLevel.GetTopLevel(dataGrid);
-        //            if (topLevel != null)
-        //            {
-        //                // 异步启动拖放，并等待结果（可选）
-        //                var result = await topLevel.DragDrop.StartAsync(data, DragDropEffects.Move);
-        //                // 可以根据 result 执行后续操作（如改变光标等）
-        //            }
-        //        }
-        //    }
+            var currentPos = e.GetPosition(sender as Visual);
+            if (Math.Abs(currentPos.X - _dragStartPoint.Value.X) > 5 ||
+                Math.Abs(currentPos.Y - _dragStartPoint.Value.Y) > 5)
+            {
+                var dragData = new DataTransfer();
+                dragData.Add(DataTransferItem.Create(FileItemFormat, _dragItem));
+                // 使用保存的 _dragPressedArgs 作为第一个参数
+                await DragDrop.DoDragDropAsync(_dragPressedArgs, dragData, DragDropEffects.Move);
+                Debug.WriteLine("Drag finished");
 
-        //}
-        //private void OnDataGridDragOver(object sender, DragEventArgs e)
-        //{
-        //    e.Handled = true;
-        //    // 使用 Any() 和 ToString() 比较
-        //    if (e.DataTransfer.Formats.Any(f => f == DataFormat.File))
-        //        e.DragEffects = DragDropEffects.Copy;
-        //    else if (e.DataTransfer.Formats.Any(f => f.ToString() == "FileItem"))
-        //        e.DragEffects = DragDropEffects.Move;
-        //    else
-        //        e.DragEffects = DragDropEffects.None;
-        //}
+                // 重置状态
+                _dragStartPoint = null;
+                _dragItem = null;
+                _dragPressedArgs = null;
+            }
+        }
 
-        //private void OnDataGridDrop(object sender, DragEventArgs e)
-        //{
-        //    e.Handled = true;
+        private void OnDataGridPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            Debug.WriteLine("PointerReleased");
+            _dragStartPoint = null;
+            _dragItem = null;
+            _dragPressedArgs = null;
+        }
+        private void OnDataGridDragOver(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("DragOver");
+            e.Handled = true;
 
-        //    //  外部文件拖放
-        //    if (e.DataTransfer.Formats.Contains(DataFormat.File))
-        //    {
-        //        var files = e.DataTransfer.TryGetFiles();
-        //        if (files != null && files.Any())
-        //        {
-        //            var filePaths = files.Select(f => f.Path.LocalPath).ToArray();
-        //            if (DataContext is MainWindowViewModel vm)
-        //            {
-        //                vm.AddFiles(filePaths);
-        //            }
-        //        }
-        //        return; 
-        //    }
+            var formats = e.DataTransfer.Formats;
+            if (formats.Contains(DataFormat.File))
+                e.DragEffects = DragDropEffects.Copy;
+            else if (formats.Contains(FileItemFormat))  
+                e.DragEffects = DragDropEffects.Move;
+            else
+                e.DragEffects = DragDropEffects.None;
 
-        //    // 内部行拖拽
-        //    if (e.DataTransfer.Formats.Any(f => f.ToString() == "FileItem"))
-        //    {
-        //        var draggedItem = e.DataTransfer.Get("FileItem") as FileItem;
-        //        if (draggedItem == null) return;
+        }
 
-        //        var targetRow = FindParent<DataGridRow>(e.Source as Visual);
-        //        if (targetRow?.DataContext is FileItem targetItem)
-        //        {
-        //            var vm = DataContext as MainWindowViewModel;
-        //            vm?.MoveFileItem(draggedItem, targetItem);
-        //        }
-        //    }
-        //}
-       
+        private void OnDataGridDrop(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("Drop");
+            e.Handled = true;
 
-        //private static T? FindParent<T>(Visual? visual) where T : Visual
-        //{
-        //    while (visual != null)
-        //    {
-        //        if (visual is T t)
-        //            return t;
-        //        visual = visual.Parent as Visual;
-        //    }
-        //    return null;
-        //}
+            //  外部文件拖放
+            if (e.DataTransfer.Formats.Contains(DataFormat.File))
+            {
+                Debug.WriteLine("  Dropped files");
+                var files = e.DataTransfer.TryGetFiles();
+                if (files != null && files.Any())
+                {
+                    var filePaths = files.Select(f => f.Path.LocalPath).ToArray();
+                    if (DataContext is MainWindowViewModel vm)
+                    {
+                        vm.AddFiles(filePaths);
+                    }
+                }
+                return;
+            }
+
+            // 内部行拖拽
+            var draggedItem = e.DataTransfer.TryGetValue<FileItem>(FileItemFormat);
+            if (draggedItem != null)
+            {
+                Debug.WriteLine($"  Dragged item: {draggedItem.FileName}");
+                var targetRow = FindParent<DataGridRow>(e.Source as Visual);
+                if (targetRow?.DataContext is FileItem targetItem)
+                {
+                    Debug.WriteLine($"  Target item: {targetItem.FileName}");
+                    var vm = DataContext as MainWindowViewModel;
+                    vm?.MoveFileItem(draggedItem, targetItem);
+                }
+                else
+                {
+                    Debug.WriteLine("  Target row not found or DataContext not FileItem");
+                }
+            }
+            else
+            {
+                Debug.WriteLine("  draggedItem is null");
+            }
+        }
+
+
+        private static T? FindParent<T>(Visual? visual) where T : Visual
+        {
+            while (visual != null)
+            {
+                if (visual is T t)
+                    return t;
+                visual = visual.Parent as Visual;
+            }
+            return null;
+        }
         #endregion
     }
 }
