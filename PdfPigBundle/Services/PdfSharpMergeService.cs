@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Lang.Avalonia;
 using PdfPigBundle.Contracts;
 using PdfPigBundle.Services;
 using PdfSharp.Drawing;
@@ -32,8 +34,8 @@ namespace PdfPigBundle.Service
                 using (var outputDocument = new PdfDocument())
                 {
                     // 设置文档信息
-                    outputDocument.Info.Title = options.Title ?? "合并的文档";
-                    outputDocument.Info.Author = options.Author ?? "PDFMerger用户";
+                    outputDocument.Info.Title = options.Title ?? "MergeredFiles";
+                    outputDocument.Info.Author = options.Author ?? "User of PDFMerger";
                     outputDocument.Info.Subject = options.Subject ?? "";
                     outputDocument.Info.Creator = options.Creator ?? "PDFMerger";
 
@@ -87,6 +89,15 @@ namespace PdfPigBundle.Service
                     outputDocument.Save(outputPath);
                     return result;
                 }
+            }
+            catch (NotImplementedException ex) when (ex.Message.Contains(">2GiB"))
+            {
+                // 专门处理超过 2GB 的大文件错误
+                result.Success = false;
+                result.ErrorMessage = T("Error_BiggerThanMaxSize");
+                // 可选：记录详细日志
+                Debug.WriteLine($"大文件错误: {ex}");
+                return result;
             }
             catch (Exception ex)
             {
@@ -217,7 +228,7 @@ namespace PdfPigBundle.Service
             };
             context.FileInfos.Add(fileInfo);
 
-            // 报告当前文件处理进度（非完成）
+            // report progress but not complete yet
             context.Options.Progress?.Report(new MergeProgress
             {
                 FileIndex = context.FileIndex,
@@ -240,12 +251,11 @@ namespace PdfPigBundle.Service
         private List<string> CheckFilesStatus(string[] filePaths, MergeOptions options, MergeResult result)
         {
             if (filePaths == null || filePaths.Length == 0)
-                throw new ArgumentException("至少提供一个文件路径");
+                throw new ArgumentException("please provide at least one file path");
 
             var validPaths = filePaths.Where(File.Exists).ToList();
             if (!validPaths.Any())
-                throw new FileNotFoundException("没有找到任何有效的 PDF 文件");
-
+                throw new FileNotFoundException("no valid PDF files were found");
             List<string> finalPaths;
             List<string>? duplicatedFiles = null;
             if (options.IgnoreDuplicates)
@@ -341,6 +351,13 @@ namespace PdfPigBundle.Service
                 Progress = progress
             };
             return Merge(filePaths, outputPath, options);
+        }
+        private static string T(string key, params object[] args)
+        {
+            var value = I18nManager.Instance.GetResource(key);
+            if (string.IsNullOrEmpty(value))
+                return key;
+            return args.Length > 0 ? string.Format(value, args) : value;
         }
     }
 

@@ -20,5 +20,22 @@
     "MainWindow_AuthorLabel": "Author:",
     "MainWindow_SubjectLabel": "Subject:",
     "MainWindow_CreatorLabel": "Creator:",
-    "MainWindow_StartMerge": "🚀 Start Merge"
+    "MainWindow_StartMerge": "🚀 Start Merge",
+    "Status_Ready": "Ready",
+    "Status_Loading": "Reading file information...",
+    "Status_Encrypted": "❌ File is encrypted and cannot be read",
+    "Message_EncryptedFiles": "The following files are encrypted and cannot be merged: {0}",
+    "Message_Move_Encrypted": "❌ Encrypted files detected, cannot merge. Please remove encrypted files.",
+    "Status_ListLoaded": "Loaded {0} file(s)",
+    "Status_ListEmpty": "List is empty",
+    "Status_Cleared": "List cleared",
+    "Status_MergePreparing": "Preparing to merge...",
+    "Status_MergeProgress": "📄 Merging [{0}/{1}]: {2} ({3} page(s))",
+    "Status_MergerSuccess": "✅ Success! Total pages: {0}, File: {1}",
+    "Status_MergeComplete": "✅ Merge completed! Total {0} pages",
+    "Status_MergeFailed": "❌ Merge failed: {0}",
+    "Status_MergeCancelled": "Merge cancelled",
+    "Status_RemovedMissing": "Cleaned up missing files. Please check the list.",
+    "Message_RemovedMissing": "Automatically removed {0} non-existent file(s). Please confirm the list and merge again.",
+    "Error_BiggerThanMaxSize": "❌ Detected a PDF file larger than 2GB. The current library does not support merging oversized files. Please try splitting the file first. {0}"
 }

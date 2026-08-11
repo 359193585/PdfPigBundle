@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Lang.Avalonia;
 using PdfPigBundle.Contracts;
 using PdfPigBundle.Infrastructure;
 using PdfPigBundle.Models;
@@ -35,7 +36,7 @@ namespace PdfPigBundle.ViewModel
             set => SetProperty(ref _progressValue, value);
         }
 
-        private string _statusMessage = "就绪";
+        private string _statusMessage = T("Status_Ready");
         public string StatusMessage
         {
             get => _statusMessage;
@@ -121,7 +122,7 @@ namespace PdfPigBundle.ViewModel
         {
             if (paths == null || paths.Length == 0) return;
 
-            // 如果输出路径为空，自动设置为第一个被加入文件所在的目录
+            // if OutputPath is empty, set it to the directory of the first file with a default name
             if (string.IsNullOrEmpty(OutputPath) && paths.Length > 0)
             {
                 var dir = Path.GetDirectoryName(paths[0]);
@@ -129,12 +130,12 @@ namespace PdfPigBundle.ViewModel
                     OutputPath = Path.Combine(dir, DefaultOutputPdfName);
             }
 
-            StatusMessage = "正在读取文件信息...";
+            StatusMessage =T("Status_Loading");
             ProgressValue = 0;
 
-            // 注意：因为此方法在 UI 线程被调用（来自 Click 或 Drop 事件），
-            // 所以我们在这里同步读取 PDF 信息，但为了避免阻塞 UI，使用 Task.Run 将耗时操作放到后台。
-            // 但更新集合必须在 UI 线程完成。
+            // Note: This method is called on the UI thread (from Click or Drop events),
+            // so we read PDF information synchronously here, but to avoid blocking the UI, we use Task.Run to perform time-consuming operations in the background.
+            // However, updating the collection must be done on the UI thread.
             Task.Run(() =>
             {
                 foreach (var path in paths)
@@ -169,7 +170,7 @@ namespace PdfPigBundle.ViewModel
                                     if (ex.Message.Contains("password") || ex.Message.Contains("encrypted"))
                                     {
                                         item.IsEncrypted = true;
-                                        item.Author = "❌加密文档无法合并";
+                                        item.Author = T("Status_Encrypted");
                                         item.PageCount = 0;
                                     }
                                     else
@@ -182,7 +183,7 @@ namespace PdfPigBundle.ViewModel
                             {
                                 // 图片：页数设为1，作者设为"图片"
                                 item.PageCount = 1;
-                                item.Author = "图片";
+                                item.Author = "Img";
                             }
                             var fi = new FileInfo(path);
                             item.FileSize = fi.Length;
@@ -190,7 +191,7 @@ namespace PdfPigBundle.ViewModel
                         catch
                         {
                             item.PageCount = 0;
-                            item.Author = "读取失败";
+                            item.Author = "ReadError";
                             item.FileSize = 0;
                         }
 
@@ -206,8 +207,8 @@ namespace PdfPigBundle.ViewModel
                     UpdateCanMerge();
                     UpdateDefaultSubject();
                     StatusMessage = FileItems.Count > 0
-            ? $"已加载 {FileItems.Count} 个文件"
-            : "列表为空";
+                     ? T("Status_ListLoaded", FileItems.Count)
+                     : T("Status_ListEmpty");
                 });
             });
         }
@@ -228,8 +229,8 @@ namespace PdfPigBundle.ViewModel
             UpdateCanMerge();
             UpdateDefaultSubject();
             StatusMessage = FileItems.Count > 0
-           ? $"已加载 {FileItems.Count} 个文件"
-           : "列表为空";
+                          ? T("Status_ListLoaded", FileItems.Count)
+                          : T("Status_ListEmpty");
 
         }
 
@@ -241,10 +242,10 @@ namespace PdfPigBundle.ViewModel
             if (index > 0)
             {
                 var item = FileItems[index];
-                FileItems.RemoveAt(index);      // 移除
-                FileItems.Insert(index - 1, item); // 插入到前一个位置
-                SelectedItem = item;            // 保持选中
-                UpdateMovementCommands();       // 刷新按钮状态（可选）
+                FileItems.RemoveAt(index);      
+                FileItems.Insert(index - 1, item); 
+                SelectedItem = item;            
+                UpdateMovementCommands();       
             }
         }
 
@@ -275,8 +276,8 @@ namespace PdfPigBundle.ViewModel
                 (MoveDownCommand as RelayCommand)?.RaiseCanExecuteChanged();
 
                 StatusMessage = FileItems.Count > 0
-            ? $"已加载 {FileItems.Count} 个文件"
-            : "列表为空";
+                     ? T("Status_ListLoaded", FileItems.Count)
+                     : T("Status_ListEmpty");
             }
         }
         private bool CheckAndCleanMissingFiles()
@@ -289,7 +290,8 @@ namespace PdfPigBundle.ViewModel
                     FileItems.Remove(item);
                 }
                 // 触发消息事件
-                ShowMessageRequested?.Invoke(this, $"已自动移除 {missingFiles.Count} 个不存在的文件。请确认列表后重新合并。");
+                var msg = T("Message_RemovedMissing", missingFiles.Count);
+                ShowMessageRequested?.Invoke(this, msg);
                 return true; // 有缺失
             }
             return false; // 无缺失
@@ -299,7 +301,7 @@ namespace PdfPigBundle.ViewModel
         {
             if (CheckAndCleanMissingFiles())
             {
-                StatusMessage = "已清理缺失文件，请检查列表。";
+                StatusMessage = T("Status_RemovedMissing");
                 // 更新按钮状态
                 UpdateCanMerge();
                 return;
@@ -332,7 +334,7 @@ namespace PdfPigBundle.ViewModel
             var filePaths = FileItems.Select(f => f.FilePath).ToArray();
 
             CanMerge = false;
-            StatusMessage = "准备合并...";
+            StatusMessage = T("Status_MergePreparing");
             ProgressValue = 0;
 
             try
@@ -343,12 +345,16 @@ namespace PdfPigBundle.ViewModel
                     {
                         if (p.IsComplete)
                         {
-                            StatusMessage = $"✅ 合并完成！共 {p.TotalPagesProcessed} 页";
+                            StatusMessage = T("Status_MergeComplete", p.TotalPagesProcessed);
                             ProgressValue = 100;
                         }
                         else
                         {
-                            StatusMessage = $"📄 正在合并 [{p.FileIndex + 1}/{p.TotalFiles}]: {p.FileName} ({p.PageCount} 页)";
+                            StatusMessage = T("Status_MergeProgress",
+                                               p.FileIndex + 1,
+                                               p.TotalFiles,
+                                               p.FileName ?? string.Empty,
+                                               p.PageCount);
                             ProgressValue = p.PercentComplete;
                         }
                     });
@@ -368,27 +374,35 @@ namespace PdfPigBundle.ViewModel
 
                 if (CheckEncryptedFiles())
                 {
-                    StatusMessage = "❌已检测到加密文件，无法合并，请删除加密文件。";
+                    StatusMessage = T("Message_Move_Encrypted");
                     return;
                 }
 
-                var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
-
-
-                if (result.Success)
+                var result =  await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
+                try
                 {
-                    StatusMessage = $"✅ 成功！总页数：{result.TotalPages}，文件：{result.OutputPath}";
-                    if (result.DuplicatedFiles.Any())
-                        StatusMessage += $"\n⚠️ 忽略重复文件：{string.Join(", ", result.DuplicatedFiles)}";
+                    if (result != null)
+                    {
+
+                        if (result.Success)
+                        {
+                            StatusMessage = T("Status_MergerSuccess", result.TotalPages, result.OutputPath ?? string.Empty);
+                            if (result.DuplicatedFiles.Any())
+                                StatusMessage += $"\n⚠️ 忽略重复文件：{string.Join(", ", result.DuplicatedFiles)}";
+                        }
+                        else
+                        {
+                            StatusMessage = T("Status_MergeFailed", result.ErrorMessage ?? string.Empty);
+                        }
+                    }
                 }
-                else
-                {
-                    StatusMessage = $"❌ 合并失败：{result.ErrorMessage}";
-                }
+                catch { }
+
+              
             }
             catch (Exception ex)
             {
-                StatusMessage = $"💥 发生异常：{ex.Message}";
+                StatusMessage = T("Status_MergeFailed", ex.Message);
             }
             finally
             {
@@ -401,7 +415,8 @@ namespace PdfPigBundle.ViewModel
             var encrypted = FileItems.Where(f => f.IsEncrypted).ToList();
             if (encrypted.Any())
             {
-                ShowMessageRequested?.Invoke(this, $"以下文件已加密，无法合并：{string.Join(", ", encrypted.Select(f => f.FileName))}");
+                var msg = T("Message_EncryptedFiles", string.Join(", ", encrypted.Select(f => f.FileName)));
+                ShowMessageRequested?.Invoke(this, msg);
                 return true;
             }
             return false;
@@ -419,7 +434,7 @@ namespace PdfPigBundle.ViewModel
 
             string firstFileName = Path.GetFileNameWithoutExtension(FileItems[0].FileName);
             string date = DateTime.Now.ToString("yyyy-MM-dd");
-            string subject = $"{date} {firstFileName}等文件的合并版";
+            string subject = $"{date} {firstFileName} MergeredFiles";
             _docSubject = subject;
             OnPropertyChanged(nameof(DocSubject));
         }
@@ -427,14 +442,14 @@ namespace PdfPigBundle.ViewModel
 
         #region  PDF 文档属性
         private bool _isSubjectManuallySet = false;
-        private string _docTitle = "合并的文档";
+        private string _docTitle = "MergeredFiles";
         public string DocTitle
         {
             get => _docTitle;
             set => SetProperty(ref _docTitle, value);
         }
 
-        private string _docAuthor = "PDFMerger的用户";
+        private string _docAuthor = "User of PDFMerger";
         public string DocAuthor
         {
             get => _docAuthor;
@@ -486,5 +501,13 @@ namespace PdfPigBundle.ViewModel
             }
         }
         #endregion
+
+        private static string T(string key, params object[] args)
+        {
+            var value = I18nManager.Instance.GetResource(key);
+            if (string.IsNullOrEmpty(value))
+                return key; 
+            return args.Length > 0 ? string.Format(value, args) : value;
+        }
     }
 }

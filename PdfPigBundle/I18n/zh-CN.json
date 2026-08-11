@@ -20,5 +20,22 @@
     "MainWindow_AuthorLabel": "作者：",
     "MainWindow_SubjectLabel": "主题：",
     "MainWindow_CreatorLabel": "创建者：",
-    "MainWindow_StartMerge": "🚀 开始合并"
+    "MainWindow_StartMerge": "🚀 开始合并",
+    "Status_Ready": "就绪",
+    "Status_Loading": "正在读取文件信息...",
+    "Status_Encrypted": "❌ 文件已加密，无法读取",
+    "Message_EncryptedFiles": "以下文件已加密，无法合并：{0}",
+    "Message_Move_Encrypted": "❌已检测到加密文件，无法合并，请删除加密文件。",
+    "Status_ListLoaded": "已加载 {0} 个文件",
+    "Status_ListEmpty": "列表为空",
+    "Status_Cleared": "列表已清空",
+    "Status_MergePreparing": "准备合并...",
+    "Status_MergeProgress": "📄 正在合并 [{0}/{1}]: {2} ({3} 页)",
+    "Status_MergerSuccess": "✅ 成功！总页数：{0}，文件：{1}",
+    "Status_MergeComplete": "✅ 合并完成！共 {0} 页",
+    "Status_MergeFailed": "❌ 合并失败：{0}",
+    "Status_MergeCancelled": "合并已取消",
+    "Status_RemovedMissing": "已清理缺失文件，请检查列表。",
+    "Message_RemovedMissing": "已自动移除 {0} 个不存在的文件。请确认列表后重新合并。",
+    "Error_BiggerThanMaxSize": "❌ 检测到超过 2GB 的 PDF 文件，当前库不支持合并超大文件。请尝试先拆分文件。{0}"
 }

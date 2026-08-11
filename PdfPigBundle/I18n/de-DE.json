@@ -20,5 +20,22 @@
     "MainWindow_AuthorLabel": "Autor:",
     "MainWindow_SubjectLabel": "Betreff:",
     "MainWindow_CreatorLabel": "Ersteller:",
-    "MainWindow_StartMerge": "🚀 Zusammenführung starten"
+    "MainWindow_StartMerge": "🚀 Zusammenführung starten",
+    "Status_Ready": "Bereit",
+    "Status_Loading": "Lese Dateiinformationen...",
+    "Status_Encrypted": "❌ Datei ist verschlüsselt und kann nicht gelesen werden",
+    "Message_EncryptedFiles": "Die folgenden Dateien sind verschlüsselt und können nicht zusammengeführt werden: {0}",
+    "Message_Move_Encrypted": "❌Verschlüsselte Dateien erkannt, Zusammenführung nicht möglich. Bitte entfernen Sie die verschlüsselten Dateien.",
+    "Status_ListLoaded": "{0} Dateien geladen",
+    "Status_ListEmpty": "Liste ist leer",
+    "Status_Cleared": "Liste geleert",
+    "Status_MergePreparing": "Zusammenführung wird vorbereitet...",
+    "Status_MergeProgress": "📄 Zusammenführen [{0}/{1}]: {2} ({3} Seiten)",
+    "Status_MergerSuccess": "✅ Erfolg! Gesamtseiten: {0}, Datei: {1}",
+    "Status_MergeComplete": "✅ Zusammenführung abgeschlossen! Insgesamt {0} Seiten",
+    "Status_MergeFailed": "❌ Zusammenführung fehlgeschlagen: {0}",
+    "Status_MergeCancelled": "Zusammenführung abgebrochen",
+    "Status_RemovedMissing": "Fehlende Dateien bereinigt. Bitte überprüfen Sie die Liste.",
+    "Message_RemovedMissing": "{0} nicht vorhandene Dateien wurden automatisch entfernt. Bitte überprüfen Sie die Liste und führen Sie die Zusammenführung erneut durch.",
+    "Error_BiggerThanMaxSize": "❌ Eine PDF-Datei größer als 2 GB wurde erkannt. Die aktuelle Bibliothek unterstützt das Zusammenführen von übergroßen Dateien nicht. Bitte versuchen Sie, die Datei zuerst aufzuteilen. {0}"
 }
