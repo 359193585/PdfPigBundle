@@ -1,4 +1,7 @@
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -6,6 +9,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Lang.Avalonia;
+using Lang.Avalonia.Json;
 using PdfPigBundle.Views;
 
 namespace PdfPigBundle
@@ -19,11 +24,22 @@ namespace PdfPigBundle
 
         public override void OnFrameworkInitializationCompleted()
         {
+            // register the JSON plugin and set the default language to English
+            var culture = GetInitialCulture();            // default "en-US"
+            I18nManager.Instance.Register(new JsonLangPlugin(), culture, out var error);
+            if (!string.IsNullOrEmpty(error))
+            {
+                // if registration fails, fallback to en-US
+                culture = new CultureInfo("en-US");
+                I18nManager.Instance.Register(new JsonLangPlugin(), culture, out var _);
+                Debug.WriteLine($"I18n fallback to en-US due to error: {error}");
+            }
+
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow();
                 AppIcon = GetPlatformIcon();
-
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -61,6 +77,25 @@ namespace PdfPigBundle
             {
                 System.Diagnostics.Debug.WriteLine($"About dialog error: {ex.Message}");
             }
+        }
+        private CultureInfo GetInitialCulture()
+        {
+            var systemCulture = CultureInfo.CurrentUICulture;
+            var i18nFolder = Path.Combine(AppContext.BaseDirectory, "I18n");
+            var candidateFile = Path.Combine(i18nFolder, $"{systemCulture.Name}.json");
+
+            // if the exact culture file exists (e.g., zh-CN.json), use it
+            if (File.Exists(candidateFile))
+                return systemCulture;
+
+            // otherwise, try to match only the language part (e.g., zh-CN falls back to zh if zh.json exists)
+            var langOnly = systemCulture.TwoLetterISOLanguageName;
+            var langOnlyFile = Path.Combine(i18nFolder, $"{langOnly}.json");
+            if (File.Exists(langOnlyFile))
+                return new CultureInfo(langOnly);
+
+            // if no matching file is found, fallback to English (en-US)
+            return new CultureInfo("en-US");
         }
     }
 }

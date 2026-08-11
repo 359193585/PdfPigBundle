@@ -1,10 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="https://codewf.com"
         xmlns:vm="using:PdfPigBundle.ViewModel"
         x:Class="PdfPigBundle.Views.MainWindow"
         x:CompileBindings="False"
         x:DataType="vm:MainWindowViewModel"
-        Title="PDF 合并工具"
+        Title="{c:I18n MainWindow_Title}"
         Width="980" Height="640"
         DragDrop.AllowDrop="True"
         DragDrop.DragOver="OnDragOver"
@@ -14,31 +15,31 @@
     <Grid Margin="20" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" RowSpacing="10">
         <!-- 工具栏 (Row 0) -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,5">
-            <Button Content="📂 添加文件"
+            <Button Content="{c:I18n MainWindow_AddFile}"
                     Click="OnAddFilesClicked"
                     Background="#4A90D9"
                     Foreground="White"
                     CornerRadius="8"
                     Padding="12,6" />
-            <Button Content="🗑 清空列表"
+            <Button Content="{c:I18n MainWindow_ClearList}"
                     Command="{Binding ClearListCommand}"
                     Background="#E74C3C"
                     Foreground="White"
                     CornerRadius="8"
                     Padding="10,6" />
-            <Button Content="▲ 上移"
+            <Button Content="{c:I18n MainWindow_MoveUp}"
                     Command="{Binding MoveUpCommand}"
                     Background="#F39C12"
                     Foreground="White"
                     CornerRadius="8"
                     Padding="10,6" />
-            <Button Content="▼ 下移"
+            <Button Content="{c:I18n MainWindow_MoveDown}"
                     Command="{Binding MoveDownCommand}"
                     Background="#F39C12"
                     Foreground="White"
                     CornerRadius="8"
                     Padding="10,6" />
-            <Button Content="✖ 删除选中"
+            <Button Content="{c:I18n MainWindow_RemoveSelected}"
                     Command="{Binding RemoveSelectedCommand}"
                     Background="#E67E22"
                     Foreground="White"
@@ -47,20 +48,20 @@
 
             <Border Width="1" Background="#CCD1D9" Margin="5,0" />
 
-            <CheckBox Content="🔁 文件去重"
+            <CheckBox Content="{c:I18n MainWindow_EnableDeduplication}"
                       IsChecked="{Binding EnableAddDuplicateCheck}"
                       VerticalAlignment="Center"
                       Foreground="#2C3E50" />
-            <CheckBox Content="🔢 自动加页码"
+            <CheckBox Content="{c:I18n MainWindow_AddPageNumbers}"
                       IsChecked="{Binding AddPageNumbers}"
                       VerticalAlignment="Center"
                       Foreground="#2C3E50" />
-            <CheckBox Content="🖼️ 允许图片"
+            <CheckBox Content="{c:I18n MainWindow_EnableImageSupport}"
                       IsChecked="{Binding EnableImageSupport}"
                       VerticalAlignment="Center"
                       Foreground="#2C3E50" />
 
-            <Button Content="ℹ️ 关于"
+            <Button Content="{c:I18n MainWindow_About}"
                     Margin="15,0,0,0"
                     Command="{Binding AboutCommand}"
                     Background="Transparent"
@@ -94,17 +95,17 @@
 
         <!-- 输出路径 (Row 2) -->
         <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,5">
-            <TextBlock Text="📁 输出路径：" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50" />
+            <TextBlock Text="{c:I18n MainWindow_OutputPath}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50" />
             <TextBox Grid.Column="1" Text="{Binding OutputPath}" IsReadOnly="True"
                      Background="#F4F8FC"
                      CornerRadius="6"
                      Padding="8,4" />
-            <Button Grid.Column="2" Content="浏览..." Click="OnBrowseOutputClicked" Margin="5,0,5,0"
+            <Button Grid.Column="2" Content="{c:I18n MainWindow_Browse}" Click="OnBrowseOutputClicked" Margin="5,0,5,0"
                     Background="#5DADE2"
                     Foreground="White"
                     CornerRadius="6"
                     Padding="12,4" />
-            <Button Grid.Column="3" Content="📂 打开文件夹" Click="OnOpenFolderClicked"
+            <Button Grid.Column="3" Content="{c:I18n MainWindow_OpenFolder}" Click="OnOpenFolderClicked"
                     Background="#4A90D9" 
                     Foreground="White"
                     CornerRadius="6"
@@ -119,26 +120,26 @@
                 BorderBrush="#E0E6ED"
                 BorderThickness="1">
             <StackPanel>
-                <TextBlock Text="📝 以下信息将写入合并后的 PDF 元数据，您可自由修改"
+                <TextBlock Text="{c:I18n MainWindow_MetadataInfo}"
                            FontSize="11"
                            Opacity="0.7"
                            Margin="0,0,0,8"
                            Foreground="#7F8C8D" />
                 <Grid ColumnDefinitions="2*,1*,2*,1*" ColumnSpacing="10">
                     <DockPanel Grid.Column="0">
-                        <TextBlock Text="标题：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBlock Text="{c:I18n MainWindow_TitleLabel}" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
                         <TextBox Text="{Binding DocTitle}" CornerRadius="4" Padding="4,2" />
                     </DockPanel>
                     <DockPanel Grid.Column="1">
-                        <TextBlock Text="作者：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBlock Text="{c:I18n MainWindow_AuthorLabel}" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
                         <TextBox Text="{Binding DocAuthor}" CornerRadius="4" Padding="4,2" />
                     </DockPanel>
                     <DockPanel Grid.Column="2">
-                        <TextBlock Text="主题：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
+                        <TextBlock Text="{c:I18n MainWindow_SubjectLabel}" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="40" />
                         <TextBox Text="{Binding DocSubject}" CornerRadius="4" Padding="4,2" />
                     </DockPanel>
                     <DockPanel Grid.Column="3">
-                        <TextBlock Text="创建者：" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="50" />
+                        <TextBlock Text="{c:I18n MainWindow_CreatorLabel}" VerticalAlignment="Center" Foreground="#2C3E50" DockPanel.Dock="Left" Width="50" />
                         <TextBox Text="{Binding DocCreator}" CornerRadius="4" Padding="4,2" />
                     </DockPanel>
                 </Grid>
@@ -158,7 +159,7 @@
         <!-- 合并按钮 (Row 5) -->
         <Button Grid.Row="5"
                 Name="MergeButton"
-                Content="🚀 开始合并"
+                Content="{c:I18n MainWindow_StartMerge}" 
                 HorizontalAlignment="Center"
                 HorizontalContentAlignment="Center"
                 Width="140"
