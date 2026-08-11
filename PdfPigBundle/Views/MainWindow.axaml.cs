@@ -240,7 +240,7 @@ namespace PdfPigBundle.Views
             _dragItem = null;
             _dragPressedArgs = null;
         }
-        private void OnDataGridDragOver(object sender, DragEventArgs e)
+        private void OnDataGridDragOver(object? sender, DragEventArgs e)
         {
             Debug.WriteLine("DragOver");
             e.Handled = true;
@@ -255,7 +255,7 @@ namespace PdfPigBundle.Views
 
         }
 
-        private void OnDataGridDrop(object sender, DragEventArgs e)
+        private void OnDataGridDrop(object? sender, DragEventArgs e)
         {
             Debug.WriteLine("Drop");
             e.Handled = true;
