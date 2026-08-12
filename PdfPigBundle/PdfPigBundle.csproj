@@ -5,10 +5,13 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-	  <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-      <AssemblyName>PDFMerger</AssemblyName>
 
-      <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AssemblyName>PDFMerger</AssemblyName>
+
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+      
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 	
 	
@@ -44,7 +47,7 @@
     <PackageReference Include="Lang.Avalonia.Json" Version="12.0.2" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
   <ItemGroup>
