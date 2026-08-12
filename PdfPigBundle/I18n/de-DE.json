@@ -29,6 +29,7 @@
     "Status_ListLoaded": "{0} Dateien geladen",
     "Status_ListEmpty": "Liste ist leer",
     "Status_Cleared": "Liste geleert",
+    "Status_IgnoreDuplicateFiles": "⚠️ Doppelte Dateien ignoriert: {0}",
     "Status_MergePreparing": "Zusammenführung wird vorbereitet...",
     "Status_MergeProgress": "📄 Zusammenführen [{0}/{1}]: {2} ({3} Seiten)",
     "Status_MergerSuccess": "✅ Erfolg! Gesamtseiten: {0}, Datei: {1}",

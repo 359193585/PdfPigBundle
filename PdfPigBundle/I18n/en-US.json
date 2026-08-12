@@ -29,6 +29,7 @@
     "Status_ListLoaded": "Loaded {0} file(s)",
     "Status_ListEmpty": "List is empty",
     "Status_Cleared": "List cleared",
+    "Status_IgnoreDuplicateFiles": "⚠️ Ignored duplicate files: {0}",
     "Status_MergePreparing": "Preparing to merge...",
     "Status_MergeProgress": "📄 Merging [{0}/{1}]: {2} ({3} page(s))",
     "Status_MergerSuccess": "✅ Success! Total pages: {0}, File: {1}",

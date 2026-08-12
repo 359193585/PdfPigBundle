@@ -29,6 +29,7 @@
     "Status_ListLoaded": "已加载 {0} 个文件",
     "Status_ListEmpty": "列表为空",
     "Status_Cleared": "列表已清空",
+    "Status_IgnoreDuplicateFiles": "⚠️ 忽略重复文件：{0}",
     "Status_MergePreparing": "准备合并...",
     "Status_MergeProgress": "📄 正在合并 [{0}/{1}]: {2} ({3} 页)",
     "Status_MergerSuccess": "✅ 成功！总页数：{0}，文件：{1}",

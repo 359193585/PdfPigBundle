@@ -364,7 +364,7 @@ namespace PdfPigBundle.ViewModel
                 {
                     IgnoreDuplicates = false,
                     Progress = progress,
-                    BookmarkGenerator = new SimpleBookmarkGenerator(), // 实现 IBookmarkGenerator 接口的类，用于生成书签
+                    BookmarkGenerator = new SimpleBookmarkGenerator(), 
                     Title = DocTitle,
                     Author = DocAuthor,
                     Subject = DocSubject,
@@ -388,7 +388,7 @@ namespace PdfPigBundle.ViewModel
                         {
                             StatusMessage = T("Status_MergerSuccess", result.TotalPages, result.OutputPath ?? string.Empty);
                             if (result.DuplicatedFiles.Any())
-                                StatusMessage += $"\n⚠️ 忽略重复文件：{string.Join(", ", result.DuplicatedFiles)}";
+                                StatusMessage += T("Status_IgnoreDuplicateFiles", result.DuplicatedFiles);
                         }
                         else
                         {
@@ -423,7 +423,7 @@ namespace PdfPigBundle.ViewModel
         }
         private void UpdateDefaultSubject()
         {
-            if (_isSubjectManuallySet) return; // 如果用户已手动修改，不覆盖
+            if (_isSubjectManuallySet) return; // If the user has manually modified it, do not overwrite
 
             if (FileItems.Count == 0)
             {

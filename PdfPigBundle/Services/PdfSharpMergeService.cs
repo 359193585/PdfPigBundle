@@ -16,12 +16,12 @@ using PdfSharp.Pdf.IO;
 namespace PdfPigBundle.Service
 {
     /// <summary>
-    /// 使用 PDFsharp 实现的 PDF 合并服务，支持保留原书签并以文件名作为一级目录
+    /// PDF merging service implemented with PDFsharp, supporting retention of original bookmarks and using file names as first-level directories
     /// </summary>
     public class PdfSharpMergeService
     {
         /// <summary>
-        /// 使用指定选项合并 PDF 文件，核心方法，返回合并结果
+        /// Merges PDF files using the specified options, core method, returns the merge result
         /// </summary>
         public MergeResult Merge(string[] filePaths, string outputPath, MergeOptions options)
         {
@@ -41,7 +41,8 @@ namespace PdfPigBundle.Service
 
                     var context = new MergeContext(outputDocument, finalPaths, options)
                     {
-                        FileInfos = new List<FileMergeInfo>(), // 用于存储每个文件的合并信息，处理过文件才有赋值
+                        // Used to store merge information for each file, only assigned for processed files
+                        FileInfos = new List<FileMergeInfo>(),
                         TotalPages = 0,
                         FileIndex = 0
                     };
@@ -61,7 +62,7 @@ namespace PdfPigBundle.Service
                         }
                     }
 
-                    // 报告完成进度
+                    // Report completion progress
                     options.Progress?.Report(new MergeProgress
                     {
                         FileIndex = finalPaths.Count,
@@ -74,29 +75,27 @@ namespace PdfPigBundle.Service
                     result.TotalPages = context.TotalPages;
                     result.Success = true;
 
-                    // 5. 生成书签（如果提供了生成器或原始文档有书签）
+                    //  Generate bookmarks (if a generator is provided or the original document has bookmarks)
                     if (options.BookmarkGenerator != null || context.FileInfos.Any(f => f.OutlineNodes.Any()))
                     {
                         GenerateBookmarks(outputDocument, context.FileInfos);
                     }
 
-                    // 所有页面添加完成后，检查是否需要添加页码
+                    // After all pages are added, check if page numbers need to be added
                     if (options.AddPageNumbers && result.TotalPages > 0)
                     {
                         AddPageNumbers(outputDocument);
                     }
-                    // 保存文件
                     outputDocument.Save(outputPath);
                     return result;
                 }
             }
             catch (NotImplementedException ex) when (ex.Message.Contains(">2GiB"))
             {
-                // 专门处理超过 2GB 的大文件错误
+                // Specifically handle errors for files larger than 2GB
                 result.Success = false;
                 result.ErrorMessage = T("Error_BiggerThanMaxSize");
-                // 可选：记录详细日志
-                Debug.WriteLine($"大文件错误: {ex}");
+                Debug.WriteLine($"Large file error: {ex}");
                 return result;
             }
             catch (Exception ex)
@@ -104,31 +103,6 @@ namespace PdfPigBundle.Service
                 result.Success = false;
                 result.ErrorMessage = ex.ToString();
                 return result;
-            }
-        }
-        private void AddPageNumbers(PdfDocument document)
-        {
-            int totalPages = document.PageCount;
-            // 使用标准 Helvetica 字体
-            GlobalFontSettings.FontResolver = new CustomFontResolver();
-            XFont font = new XFont("Helvetica", 12, XFontStyleEx.Regular);
-            XBrush brush = XBrushes.Black;
-
-            for (int i = 0; i < totalPages; i++)
-            {
-                PdfPage page = document.Pages[i];
-                // 以追加模式打开页面进行绘制
-                using (XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append))
-                {
-                    string text = $"{i + 1} / {totalPages}";
-                    XSize size = gfx.MeasureString(text, font);
-                    // 底部居中，距底部 20 点
-                    double pageWidth = page.Width.Point;
-                    double pageHeight = page.Height.Point;
-                    double x = (pageWidth - size.Width) / 2;
-                    double y = pageHeight - 20; // 距底部 20 点
-                    gfx.DrawString(text, font, brush, x, y);
-                }
             }
         }
         private class MergeContext
@@ -147,18 +121,43 @@ namespace PdfPigBundle.Service
             public int TotalPages { get; set; }
             public int FileIndex { get; set; }
         }
+        private void AddPageNumbers(PdfDocument document)
+        {
+            int totalPages = document.PageCount;
+            // Use standard Helvetica font
+            GlobalFontSettings.FontResolver = new CustomFontResolver();
+            XFont font = new XFont("Helvetica", 12, XFontStyleEx.Regular);
+            XBrush brush = XBrushes.Black;
+
+            for (int i = 0; i < totalPages; i++)
+            {
+                PdfPage page = document.Pages[i];
+                // Open the page in append mode for drawing
+                using (XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append))
+                {
+                    string text = $"{i + 1} / {totalPages}";
+                    XSize size = gfx.MeasureString(text, font);
+                    // Centered at the bottom, 20 points from the bottom
+                    double pageWidth = page.Width.Point;
+                    double pageHeight = page.Height.Point;
+                    double x = (pageWidth - size.Width) / 2;
+                    double y = pageHeight - 20; 
+                    gfx.DrawString(text, font, brush, x, y);
+                }
+            }
+        }
         private void GenerateBookmarks(PdfDocument outputDocument, List<FileMergeInfo> fileInfos)
         {
             foreach (var fileInfo in fileInfos)
             {
-                // 创建顶层书签（文件名）
+                // Create top-level bookmark (use file name)
                 int firstPageIndex = fileInfo.StartPageNumber - 1;
                 if (firstPageIndex >= 0 && firstPageIndex < outputDocument.PageCount)
                 {
                     var destPage = outputDocument.Pages[firstPageIndex];
                     var fileOutline = outputDocument.Outlines.Add(fileInfo.FileNameWithoutExtension, destPage, false);
 
-                    // 如果该文件有原始书签，则将其作为子书签添加
+                    // If the file has original bookmarks, add them as child bookmarks
                     if (fileInfo.OutlineNodes.Any())
                     {
                         foreach (var rootNode in fileInfo.OutlineNodes)
@@ -169,7 +168,6 @@ namespace PdfPigBundle.Service
                 }
             }
         }
-
         private void ProcessSingleImage(MergeContext context, string imagePath)
         {
             var converter = new ImageToPdfPageConverter();
@@ -181,7 +179,7 @@ namespace PdfPigBundle.Service
                 using (var importDoc = PdfReader.Open(ms, PdfDocumentOpenMode.Import))
                 {
                     var pages = importDoc.Pages.Cast<PdfPage>();
-                    // 图片无子书签，传空列表
+                    // Images have no child bookmarks, pass an empty list
                     ProcessPages(context, imagePath, pages, importDoc.PageCount, new List<OutlineNode>());
                 }
             }
@@ -217,7 +215,7 @@ namespace PdfPigBundle.Service
         {
             int startPage = context.TotalPages + 1;
 
-            // 记录文件信息（用于书签）
+            // Record file information (used for bookmarks)
             var fileInfo = new FileMergeInfo
             {
                 FilePath = filePath,
@@ -239,7 +237,7 @@ namespace PdfPigBundle.Service
                 IsComplete = false
             });
 
-            // 复制页面到输出文档
+            // Copy pages to the output document
             foreach (var page in pages)
             {
                 context.OutputDocument.AddPage(page);
@@ -281,14 +279,14 @@ namespace PdfPigBundle.Service
             return finalPaths;
         }
 
-        // ---------- 辅助方法：提取大纲树 ----------
+        // ---------- Helper Method: Extract Outline Tree ----------
         private List<OutlineNode> ExtractOutlineNodes(PdfOutlineCollection outlines, Dictionary<PdfPage, int> pageIndexMap)
         {
             var list = new List<OutlineNode>();
             if (outlines == null) return list;
             foreach (PdfOutline outline in outlines)
             {
-                list.Add(ExtractOutlineNode(outline, pageIndexMap)); // 传递映射
+                list.Add(ExtractOutlineNode(outline, pageIndexMap)); // Pass the mapping
             }
             return list;
         }
@@ -304,29 +302,36 @@ namespace PdfPigBundle.Service
             };
             foreach (PdfOutline child in outline.Outlines)
             {
-                node.Children.Add(ExtractOutlineNode(child, pageIndexMap)); // 递归传递
+                node.Children.Add(ExtractOutlineNode(child, pageIndexMap)); // Recursively pass
             }
             return node;
         }
 
-        // ---------- 辅助方法：添加大纲节点到输出文档 ----------
+        // ---------- Helper Method: Add Outline Node to Output Document ----------
         private void AddOutlineNode(OutlineNode node, PdfOutline parent, int pageOffset, PdfDocument outputDoc)
         {
             int destPageIndex = node.PageIndex + pageOffset;
             if (destPageIndex < 0 || destPageIndex >= outputDoc.PageCount)
-                return; // 无效页码则跳过
+                return; // Skip invalid page numbers
 
             var destPage = outputDoc.Pages[destPageIndex];
-            // 创建大纲节点（展开状态取决于是否有子节点）
+            // Create outline node (expanded state depends on whether it has child nodes)
             var newOutline = parent.Outlines.Add(node.Title, destPage, node.Children.Any());
-            // 递归添加子节点
+            // Recursively add child nodes
             foreach (var child in node.Children)
             {
                 AddOutlineNode(child, newOutline, pageOffset, outputDoc);
             }
         }
+        private static string T(string key, params object[] args)
+        {
+            var value = I18nManager.Instance.GetResource(key);
+            if (string.IsNullOrEmpty(value))
+                return key;
+            return args.Length > 0 ? string.Format(value, args) : value;
+        }
 
-        // ---------- Merge 重载方法  ----------
+        #region  ---------- Merge Overload Methods ----------
         public MergeResult Merge(string[] filePaths)
         {
             var output = Path.Combine(
@@ -352,16 +357,11 @@ namespace PdfPigBundle.Service
             };
             return Merge(filePaths, outputPath, options);
         }
-        private static string T(string key, params object[] args)
-        {
-            var value = I18nManager.Instance.GetResource(key);
-            if (string.IsNullOrEmpty(value))
-                return key;
-            return args.Length > 0 ? string.Format(value, args) : value;
-        }
+        #endregion
+
     }
 
-    // ---------- 辅助数据结构 ----------
+    #region Helper Data Structures 
     public class FileMergeInfo
     {
         public string FilePath { get; set; } = string.Empty;
@@ -376,8 +376,7 @@ namespace PdfPigBundle.Service
         public string Title { get; set; } = string.Empty;
         public int PageIndex { get; set; } // 0-based within source
         public List<OutlineNode> Children { get; set; } = new List<OutlineNode>();
-
-       
     }
+    #endregion
 
 }

@@ -29,6 +29,7 @@
     "Status_ListLoaded": "{0} 個のファイルを読み込みました",
     "Status_ListEmpty": "リストは空です",
     "Status_Cleared": "リストをクリアしました",
+    "Status_IgnoreDuplicateFiles": "⚠️ 重複ファイルを無視しました：{0}",
     "Status_MergePreparing": "マージを準備中...",
     "Status_MergeProgress": "📄 マージ中 [{0}/{1}]: {2} ({3} ページ)",
     "Status_MergerSuccess": "✅ 成功！総ページ数：{0}、ファイル：{1}",
