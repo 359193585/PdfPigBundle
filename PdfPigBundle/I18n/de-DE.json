@@ -38,5 +38,10 @@
     "Status_MergeCancelled": "Zusammenführung abgebrochen",
     "Status_RemovedMissing": "Fehlende Dateien bereinigt. Bitte überprüfen Sie die Liste.",
     "Message_RemovedMissing": "{0} nicht vorhandene Dateien wurden automatisch entfernt. Bitte überprüfen Sie die Liste und führen Sie die Zusammenführung erneut durch.",
-    "Error_BiggerThanMaxSize": "❌ Eine PDF-Datei größer als 2 GB wurde erkannt. Die aktuelle Bibliothek unterstützt das Zusammenführen von übergroßen Dateien nicht. Bitte versuchen Sie, die Datei zuerst aufzuteilen. {0}"
+    "Error_BiggerThanMaxSize": "❌ Eine PDF-Datei größer als 2 GB wurde erkannt. Die aktuelle Bibliothek unterstützt das Zusammenführen von übergroßen Dateien nicht. Bitte versuchen Sie, die Datei zuerst aufzuteilen. {0}",
+    "Status_CheckingUpdate": "🔄 Suche nach Updates...",
+    "Status_UpToDate": "Auf dem neuesten Stand",
+    "Status_NewVersionAvailable": "Neue Version {0} verfügbar, hier klicken zum Herunterladen",
+    "Status_UpdateCheckFailed": "Updateprüfung fehlgeschlagen, bitte später erneut versuchen",
+    "MainWindow_CheckForUpdates": "🔄 Nach Updates suchen"
 }

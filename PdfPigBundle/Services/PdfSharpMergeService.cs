@@ -94,7 +94,7 @@ namespace PdfPigBundle.Service
             {
                 // Specifically handle errors for files larger than 2GB
                 result.Success = false;
-                result.ErrorMessage = T("Error_BiggerThanMaxSize");
+                result.ErrorMessage = T("Error_BiggerThanMaxSize", "");
                 Debug.WriteLine($"Large file error: {ex}");
                 return result;
             }
@@ -141,7 +141,7 @@ namespace PdfPigBundle.Service
                     double pageWidth = page.Width.Point;
                     double pageHeight = page.Height.Point;
                     double x = (pageWidth - size.Width) / 2;
-                    double y = pageHeight - 20; 
+                    double y = pageHeight - 20;
                     gfx.DrawString(text, font, brush, x, y);
                 }
             }

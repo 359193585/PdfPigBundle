@@ -4,6 +4,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Lang.Avalonia;
@@ -21,7 +24,7 @@ namespace PdfPigBundle.ViewModel
         private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
         public event EventHandler<string> ShowMessageRequested = delegate { };
 
-       
+
         private string _outputPath = string.Empty;
         public string OutputPath
         {
@@ -78,7 +81,7 @@ namespace PdfPigBundle.ViewModel
 
         public ICommand MergeCommand { get; }
 
-        public  static string DefaultOutputPdfName = "outputOfMerge.pdf";
+        public static string DefaultOutputPdfName = "outputOfMerge.pdf";
         public MainWindowViewModel()
         {
             ClearListCommand = new RelayCommand(ClearList);
@@ -130,7 +133,7 @@ namespace PdfPigBundle.ViewModel
                     OutputPath = Path.Combine(dir, DefaultOutputPdfName);
             }
 
-            StatusMessage =T("Status_Loading");
+            StatusMessage = T("Status_Loading");
             ProgressValue = 0;
 
             // Note: This method is called on the UI thread (from Click or Drop events),
@@ -217,7 +220,7 @@ namespace PdfPigBundle.ViewModel
         {
             OutputPath = path;
         }
-      
+
         #endregion
 
         #region 私有方法（清空、上移、下移、删除选中、合并）
@@ -242,10 +245,10 @@ namespace PdfPigBundle.ViewModel
             if (index > 0)
             {
                 var item = FileItems[index];
-                FileItems.RemoveAt(index);      
-                FileItems.Insert(index - 1, item); 
-                SelectedItem = item;            
-                UpdateMovementCommands();       
+                FileItems.RemoveAt(index);
+                FileItems.Insert(index - 1, item);
+                SelectedItem = item;
+                UpdateMovementCommands();
             }
         }
 
@@ -307,7 +310,7 @@ namespace PdfPigBundle.ViewModel
                 return;
             }
 
-            if (FileItems.Count ==0 || string.IsNullOrEmpty(OutputPath)) return;
+            if (FileItems.Count == 0 || string.IsNullOrEmpty(OutputPath)) return;
 
             // ---- 处理输出文件已存在的情况 生成带序号的新路径----
             string originalPath = OutputPath;          // 保存用户指定的原始路径
@@ -364,7 +367,7 @@ namespace PdfPigBundle.ViewModel
                 {
                     IgnoreDuplicates = false,
                     Progress = progress,
-                    BookmarkGenerator = new SimpleBookmarkGenerator(), 
+                    BookmarkGenerator = new SimpleBookmarkGenerator(),
                     Title = DocTitle,
                     Author = DocAuthor,
                     Subject = DocSubject,
@@ -378,7 +381,7 @@ namespace PdfPigBundle.ViewModel
                     return;
                 }
 
-                var result =  await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
+                var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
                 try
                 {
                     if (result != null)
@@ -398,7 +401,7 @@ namespace PdfPigBundle.ViewModel
                 }
                 catch { }
 
-              
+
             }
             catch (Exception ex)
             {
@@ -460,7 +463,8 @@ namespace PdfPigBundle.ViewModel
         public string DocSubject
         {
             get => _docSubject;
-            set {
+            set
+            {
                 if (SetProperty(ref _docSubject, value))
                     _isSubjectManuallySet = true;
             }
@@ -506,7 +510,7 @@ namespace PdfPigBundle.ViewModel
         {
             var value = I18nManager.Instance.GetResource(key);
             if (string.IsNullOrEmpty(value))
-                return key; 
+                return key;
             return args.Length > 0 ? string.Format(value, args) : value;
         }
     }

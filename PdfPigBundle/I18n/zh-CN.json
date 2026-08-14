@@ -38,5 +38,10 @@
     "Status_MergeCancelled": "合并已取消",
     "Status_RemovedMissing": "已清理缺失文件，请检查列表。",
     "Message_RemovedMissing": "已自动移除 {0} 个不存在的文件。请确认列表后重新合并。",
-    "Error_BiggerThanMaxSize": "❌ 检测到超过 2GB 的 PDF 文件，当前库不支持合并超大文件。请尝试先拆分文件。{0}"
+    "Error_BiggerThanMaxSize": "❌ 检测到超过 2GB 的 PDF 文件，当前库不支持合并超大文件。请尝试先拆分文件。{0}",
+    "Status_CheckingUpdate": "正在检查更新...",
+    "Status_UpToDate": "已是最新版本",
+    "Status_NewVersionAvailable": "发现新版本 {0}，点击这里下载",
+    "Status_UpdateCheckFailed": "检查更新失败，请稍后重试",
+    "MainWindow_CheckForUpdates": "🔄 检查更新"
 }

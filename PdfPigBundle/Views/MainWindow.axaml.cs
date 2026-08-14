@@ -41,7 +41,7 @@ namespace PdfPigBundle.Views
 
 
         }
-      
+
         private void ConfigureDataGridColumns()
         {
             FileDataGrid.Columns.Add(new DataGridTextColumn
@@ -104,7 +104,7 @@ namespace PdfPigBundle.Views
             if (files != null && files.Count > 0)
             {
                 var paths = files.Select(f => f.Path.LocalPath).ToArray();
-                vm.AddFiles(paths); 
+                vm.AddFiles(paths);
             }
         }
 
@@ -192,7 +192,7 @@ namespace PdfPigBundle.Views
                 }
             }
 
-           
+
         }
 
         #region Drag and Drop for DataGrid
@@ -248,7 +248,7 @@ namespace PdfPigBundle.Views
             var formats = e.DataTransfer.Formats;
             if (formats.Contains(DataFormat.File))
                 e.DragEffects = DragDropEffects.Copy;
-            else if (formats.Contains(FileItemFormat))  
+            else if (formats.Contains(FileItemFormat))
                 e.DragEffects = DragDropEffects.Move;
             else
                 e.DragEffects = DragDropEffects.None;

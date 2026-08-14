@@ -38,5 +38,10 @@
     "Status_MergeCancelled": "Merge cancelled",
     "Status_RemovedMissing": "Cleaned up missing files. Please check the list.",
     "Message_RemovedMissing": "Automatically removed {0} non-existent file(s). Please confirm the list and merge again.",
-    "Error_BiggerThanMaxSize": "❌ Detected a PDF file larger than 2GB. The current library does not support merging oversized files. Please try splitting the file first. {0}"
+    "Error_BiggerThanMaxSize": "❌ Detected a PDF file larger than 2GB. The current library does not support merging oversized files. Please try splitting the file first. {0}",
+    "Status_CheckingUpdate": "🔄 Checking for updates...",
+    "Status_UpToDate": "✅ Up to date",
+    "Status_NewVersionAvailable": "🔔 New version {0} available, click here to download",
+    "Status_UpdateCheckFailed": "❌ Update check failed, please try again later",
+    "MainWindow_CheckForUpdates": "🔄 Check for Updates"
 }

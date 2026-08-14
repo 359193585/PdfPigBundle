@@ -38,5 +38,10 @@
     "Status_MergeCancelled": "マージがキャンセルされました",
     "Status_RemovedMissing": "存在しないファイルをクリーンアップしました。リストを確認してください。",
     "Message_RemovedMissing": "存在しないファイル {0} 個を自動的に削除しました。リストを確認してマージを再実行してください。",
-    "Error_BiggerThanMaxSize": "❌ 2GBを超えるPDFファイルが検出されました。現在のライブラリは巨大なファイルのマージをサポートしていません。まずファイルを分割してみてください。{0}"
+    "Error_BiggerThanMaxSize": "❌ 2GBを超えるPDFファイルが検出されました。現在のライブラリは巨大なファイルのマージをサポートしていません。まずファイルを分割してみてください。{0}",
+    "Status_CheckingUpdate": "🔄 更新を確認中...",
+    "Status_UpToDate": "最新バージョンです",
+    "Status_NewVersionAvailable": "新しいバージョン {0} が利用可能です。ここをクリックしてダウンロード",
+    "Status_UpdateCheckFailed": "更新確認に失敗しました。後でもう一度お試しください",
+    "MainWindow_CheckForUpdates": "🔄 更新を確認"
 }
