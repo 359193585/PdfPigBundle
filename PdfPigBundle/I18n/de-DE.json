@@ -43,5 +43,9 @@
     "Status_UpToDate": "Auf dem neuesten Stand",
     "Status_NewVersionAvailable": "Neue Version {0} verfügbar, hier klicken zum Herunterladen",
     "Status_UpdateCheckFailed": "Updateprüfung fehlgeschlagen, bitte später erneut versuchen",
-    "MainWindow_CheckForUpdates": "🔄 Nach Updates suchen"
+    "MainWindow_CheckForUpdates": "🔄 Nach Updates suchen",
+    "DataGrid_Column_FileName": "Dateiname",
+    "DataGrid_Column_PageCount": "Seiten",
+    "DataGrid_Column_FileSize": "Dateigröße",
+    "DataGrid_Column_Author": "Autor"
 }

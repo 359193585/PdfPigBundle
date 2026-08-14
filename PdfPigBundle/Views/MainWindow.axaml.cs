@@ -9,6 +9,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Lang.Avalonia;
 using MsBox.Avalonia;
 using PdfPigBundle.Models;
 using PdfPigBundle.ViewModel;
@@ -46,25 +47,25 @@ namespace PdfPigBundle.Views
         {
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "File Name",
+                Header = T("DataGrid_Column_FileName"),
                 Binding = new Binding("FileName"),
                 Width = new DataGridLength(3, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "Page Count",
+                Header = T("DataGrid_Column_PageCount"),
                 Binding = new Binding("PageCount"),
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "File Size",
+                Header = T("DataGrid_Column_FileSize"),
                 Binding = new Binding("FileSizeDisplay"),
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "Author",
+                Header = T("DataGrid_Column_Author"),
                 Binding = new Binding("Author"),
                 Width = new DataGridLength(1.5, DataGridLengthUnitType.Star)
             });
@@ -307,5 +308,13 @@ namespace PdfPigBundle.Views
             return null;
         }
         #endregion
+
+        private static string T(string key, params object[] args)
+        {
+            var value = I18nManager.Instance.GetResource(key);
+            if (string.IsNullOrEmpty(value))
+                return key;
+            return args.Length > 0 ? string.Format(value, args) : value;
+        }
     }
 }

@@ -43,5 +43,9 @@
     "Status_UpToDate": "✅ Up to date",
     "Status_NewVersionAvailable": "🔔 New version {0} available, click here to download",
     "Status_UpdateCheckFailed": "❌ Update check failed, please try again later",
-    "MainWindow_CheckForUpdates": "🔄 Check for Updates"
+    "MainWindow_CheckForUpdates": "🔄 Check for Updates",
+    "DataGrid_Column_FileName": "File Name",
+    "DataGrid_Column_PageCount": "Pages",
+    "DataGrid_Column_FileSize": "File Size",
+    "DataGrid_Column_Author": "Author"
 }

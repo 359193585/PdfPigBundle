@@ -43,5 +43,9 @@
     "Status_UpToDate": "已是最新版本",
     "Status_NewVersionAvailable": "发现新版本 {0}，点击这里下载",
     "Status_UpdateCheckFailed": "检查更新失败，请稍后重试",
-    "MainWindow_CheckForUpdates": "🔄 检查更新"
+    "MainWindow_CheckForUpdates": "🔄 检查更新",
+    "DataGrid_Column_FileName": "文件名",
+    "DataGrid_Column_PageCount": "页数",
+    "DataGrid_Column_FileSize": "文件大小",
+    "DataGrid_Column_Author": "作者"
 }

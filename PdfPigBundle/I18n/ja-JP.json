@@ -43,5 +43,9 @@
     "Status_UpToDate": "最新バージョンです",
     "Status_NewVersionAvailable": "新しいバージョン {0} が利用可能です。ここをクリックしてダウンロード",
     "Status_UpdateCheckFailed": "更新確認に失敗しました。後でもう一度お試しください",
-    "MainWindow_CheckForUpdates": "🔄 更新を確認"
+    "MainWindow_CheckForUpdates": "🔄 更新を確認",
+    "DataGrid_Column_FileName": "ファイル名",
+    "DataGrid_Column_PageCount": "ページ数",
+    "DataGrid_Column_FileSize": "ファイルサイズ",
+    "DataGrid_Column_Author": "作成者"
 }
