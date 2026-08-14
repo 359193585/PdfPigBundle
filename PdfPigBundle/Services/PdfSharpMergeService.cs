@@ -33,7 +33,6 @@ namespace PdfPigBundle.Service
 
                 using (var outputDocument = new PdfDocument())
                 {
-                    // 设置文档信息
                     outputDocument.Info.Title = options.Title ?? "MergeredFiles";
                     outputDocument.Info.Author = options.Author ?? "User of PDFMerger";
                     outputDocument.Info.Subject = options.Subject ?? "";

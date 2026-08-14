@@ -11,44 +11,44 @@ using SixLabors.ImageSharp.Formats.Png;
 namespace PdfPigBundle.Services
 {
     /// <summary>
-    /// 图片转 PDF 页面转换器，支持多种输入源和页面尺寸模式。
+    /// image to pdf converter, supports multiple input sources and page size modes.
     /// </summary>
     public class ImageToPdfPageConverter
     {
         /// <summary>
-        /// 页面尺寸模式
+        /// page size mode
         /// </summary>
         public enum PageSizeMode
         {
-            /// <summary>页面大小自动适应图片尺寸</summary>
+            /// <summary>page size automatically fits the image size</summary>
             FitImage,
-            /// <summary>固定 A4 大小（595×842 点），图片居中缩放以适应</summary>
+            /// <summary>fixed A4 size (595×842 points), image is centered and scaled to fit</summary>
             A4,
-            /// <summary>自定义大小（需指定宽度和高度）</summary>
+            /// <summary>custom size (requires specifying width and height)</summary>
             Custom
         }
 
         /// <summary>
-        /// 默认页面尺寸模式
+        /// default page size mode
         /// </summary>
         public PageSizeMode DefaultMode { get; set; } = PageSizeMode.FitImage;
 
         /// <summary>
-        /// 默认自定义宽度（点），当 DefaultMode = Custom 时使用
+        /// default custom width (points), used when DefaultMode = Custom
         /// </summary>
         public double? DefaultCustomWidth { get; set; }
 
         /// <summary>
-        /// 默认自定义高度（点），当 DefaultMode = Custom 时使用
+        /// default custom height (points), used when DefaultMode = Custom
         /// </summary>
         public double? DefaultCustomHeight { get; set; }
 
         /// <summary>
-        /// 构造函数
+        /// constructor
         /// </summary>
-        /// <param name="defaultMode">默认页面尺寸模式</param>
-        /// <param name="defaultCustomWidth">自定义宽度（点），mode=Custom 时必填</param>
-        /// <param name="defaultCustomHeight">自定义高度（点），mode=Custom 时必填</param>
+        /// <param name="defaultMode">default page size mode</param>
+        /// <param name="defaultCustomWidth">default custom width (points), required when mode=Custom</param>
+        /// <param name="defaultCustomHeight">default custom height (points), required when mode=Custom</param>
         public ImageToPdfPageConverter(
             PageSizeMode defaultMode = PageSizeMode.FitImage,
             double? defaultCustomWidth = null,
@@ -59,21 +59,21 @@ namespace PdfPigBundle.Services
             DefaultCustomHeight = defaultCustomHeight;
         }
 
-        // ---------- 从文件路径转换 ----------
+        // ---------- from file path ----------
 
         /// <summary>
-        /// 从图片文件转换为 PDF 文档（使用默认设置）
+        /// converts an image file to a PDF document (using default settings)
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(string imagePath)
             => ConvertImageToPdfDocument(imagePath, DefaultMode, DefaultCustomWidth, DefaultCustomHeight);
 
         /// <summary>
-        /// 从图片文件转换为 PDF 文档（指定尺寸模式）
+        /// converts an image file to a PDF document (specified page size mode)
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(string imagePath, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
             if (!File.Exists(imagePath))
-                throw new FileNotFoundException("图片文件不存在", imagePath);
+                throw new FileNotFoundException("image file not found", imagePath);
 
             bool isJpg = imagePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
                 imagePath.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase);
@@ -83,7 +83,7 @@ namespace PdfPigBundle.Services
                 using (var stream = File.OpenRead(imagePath))
                     return ConvertImageToPdfDocument(stream, mode, customWidth, customHeight);
             }
-            catch (Exception) when (isJpg) //如果失败,且文件是 JPG 格式
+            catch (Exception) when (isJpg) 
             {
                 using (var ms = new MemoryStream())
                 {
@@ -97,58 +97,58 @@ namespace PdfPigBundle.Services
             }
         }
 
-        // ---------- 从字节数组转换 ----------
+        // ---------- from byte array ----------
 
         /// <summary>
-        /// 从图片字节数组转换为 PDF 文档（使用默认设置）
+        /// converts an image byte array to a PDF document (using default settings)
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(byte[] imageData)
             => ConvertImageToPdfDocument(imageData, DefaultMode, DefaultCustomWidth, DefaultCustomHeight);
 
         /// <summary>
-        /// 从图片字节数组转换为 PDF 文档（指定尺寸模式）
+        /// converts an image byte array to a PDF document (specified page size mode)
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(byte[] imageData, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
             if (imageData == null || imageData.Length == 0)
-                throw new ArgumentException("图片数据不能为空", nameof(imageData));
+                throw new ArgumentException("image data cannot be null or empty", nameof(imageData));
 
             using (var ms = new MemoryStream(imageData))
                 return ConvertImageToPdfDocument(ms, mode, customWidth, customHeight);
         }
 
-        // ---------- 从流转换（核心实现） ----------
+        // ---------- from stream (core implementation) ----------
 
         /// <summary>
-        /// 从图片流转换为 PDF 文档（使用默认设置）
+        /// converts an image stream to a PDF document (using default settings)
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(Stream imageStream)
             => ConvertImageToPdfDocument(imageStream, DefaultMode, DefaultCustomWidth, DefaultCustomHeight);
 
         /// <summary>
-        /// 从图片流转换为 PDF 文档（指定尺寸模式）—— 核心方法
+        /// converts an image stream to a PDF document (specified page size mode) — core method
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(Stream imageStream, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
             if (imageStream == null || !imageStream.CanRead)
-                throw new ArgumentException("无效的图片流", nameof(imageStream));
+                throw new ArgumentException("invalid image stream", nameof(imageStream));
 
-            // 确定页面尺寸
+            // determine page size
             double pageWidth, pageHeight;
             switch (mode)
             {
                 case PageSizeMode.FitImage:
-                    // 我们使用 XImage.FromStream 直接读取，但注意流可能被用完。
+                    // use XImage.FromStream to read directly, but be aware the stream may be consumed.
                     using (var tempImage = XImage.FromStream(imageStream))
                     {
                         pageWidth = tempImage.PointWidth;
                         pageHeight = tempImage.PointHeight;
                     }
-                    // 但此时流已经读完，后续绘制需要重新读取图片。重新定位流
+                    // but at this point the stream has been read, subsequent drawing requires re-reading the image. reposition the stream
                     if (imageStream.CanSeek)
                         imageStream.Seek(0, SeekOrigin.Begin);
                     else
-                        throw new InvalidOperationException("流不可重置，无法多次读取。请使用字节数组或可重置流。");
+                        throw new InvalidOperationException("stream cannot be reset, cannot read multiple times. please use a byte array or a resettable stream.");
                     break;
                 case PageSizeMode.A4:
                     pageWidth = 595;
@@ -156,24 +156,24 @@ namespace PdfPigBundle.Services
                     break;
                 case PageSizeMode.Custom:
                     if (!customWidth.HasValue || !customHeight.HasValue)
-                        throw new ArgumentException("Custom 模式必须指定 customWidth 和 customHeight");
+                        throw new ArgumentException("Custom mode requires specifying customWidth and customHeight");
                     pageWidth = customWidth.Value;
                     pageHeight = customHeight.Value;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(mode), "不支持的页面尺寸模式");
+                    throw new ArgumentOutOfRangeException(nameof(mode), "unsupported page size mode");
             }
 
-            // 创建文档和页面
+            // create document and page
             var doc = new PdfDocument();
             var page = doc.AddPage();
             page.Width = XUnit.FromPoint(pageWidth);
             page.Height = XUnit.FromPoint(pageHeight);
 
-            // 绘制图片（如果模式是 FitImage，我们已经读取过，重新定位流后再次读取）
+            // draw image (if mode is FitImage, we have already read it, reposition the stream and read again)
             using (var gfx = XGraphics.FromPdfPage(page))
             {
-                // 若模式是 FitImage，我们需要再读取一次图片以绘制；否则只需读取一次。
+                // if mode is FitImage, we need to read the image again to draw; otherwise, only need to read once.
                 using (var image = XImage.FromStream(imageStream))
                 {
                     double scaleX = pageWidth / image.PointWidth;
@@ -192,10 +192,10 @@ namespace PdfPigBundle.Services
             return doc;
         }
 
-        // ---------- 简便方法：直接添加页面到现有文档 ----------
+        // ---------- simple method: directly add a page to an existing document ----------
 
         /// <summary>
-        /// 将图片转换为一页，并直接添加到指定的 PdfDocument（不返回新文档）
+        /// converts an image to a page and directly adds it to the specified PdfDocument (does not return a new document)
         /// </summary>
         public void AddImagePageToDocument(string imagePath, PdfDocument targetDoc, PageSizeMode mode = PageSizeMode.FitImage, double? customWidth = null, double? customHeight = null)
         {
@@ -204,10 +204,10 @@ namespace PdfPigBundle.Services
 
             using (var tempDoc = ConvertImageToPdfDocument(imagePath, mode, customWidth, customHeight))
             {
-                // 导入 tempDoc 的页面到 targetDoc（使用 PdfReader.Open 以 Import 模式）
-                // 由于我们已经有了 tempDoc，但 PdfDocument 不能直接导入，需要保存为流再打开
-                // 更简单：直接遍历页面并添加到 targetDoc（但 page 属于 tempDoc，不能直接 AddPage）
-                // 正确做法：使用 PdfReader.Open 以 Import 模式打开 tempDoc 保存的流
+                // import pages from tempDoc to targetDoc (using PdfReader.Open in Import mode)
+                // since we already have tempDoc, but PdfDocument cannot be directly imported, we need to save to a stream and then open
+                // simpler: directly iterate pages and add to targetDoc (but page belongs to tempDoc, cannot directly AddPage)
+                // correct approach: use PdfReader.Open in Import mode to open the stream saved from tempDoc
                 using (var ms = new MemoryStream())
                 {
                     tempDoc.Save(ms);

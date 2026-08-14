@@ -33,7 +33,7 @@ namespace PdfPigBundle.Models
             get => _fileSize;
             set => SetProperty(ref _fileSize, value);
         }
-        public string FileSizeDisplay => FileSize > 0 ? $"{FileSize / 1024.0:F1} KB" : "未知";
+        public string FileSizeDisplay => FileSize > 0 ? $"{FileSize / 1024.0:F1} KB" : "Unknown";
 
         private string? _author;
         public string Author

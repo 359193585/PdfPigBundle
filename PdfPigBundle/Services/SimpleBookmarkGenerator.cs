@@ -6,7 +6,6 @@ using PdfPigBundle.Contracts;
 
 namespace PdfPigBundle.Services;
 /// <summary>
-/// 实现 IBookmarkGenerator 接口的类，用于生成书签
 /// Class implementing the IBookmarkGenerator interface, used for generating bookmarks
 /// </summary>
 public class SimpleBookmarkGenerator : IBookmarkGenerator

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=PDFMerger
-Comment=PDF 合并工具
+Comment=PDF Merge Tool
 Exec=sh -c "cd \"$(dirname %k)\" && ./PDFMerger"
 Icon=icon.png
 Terminal=false

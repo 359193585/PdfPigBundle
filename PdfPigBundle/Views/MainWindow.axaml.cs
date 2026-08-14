@@ -25,12 +25,12 @@ namespace PdfPigBundle.Views
             ConfigureDataGridColumns();
             vm.ShowMessageRequested += async (s, msg) =>
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("提示", msg);
+                var box = MessageBoxManager.GetMessageBoxStandard("Notice", msg);
                 await box.ShowAsync();
             };
 
 
-            // ----- 为 DataGrid 启用拖放功能  -----
+            // ----- enable drag and drop for DataGrid  -----
             DragDrop.SetAllowDrop(FileDataGrid, true);
 
             FileDataGrid.AddHandler(PointerPressedEvent, OnDataGridPointerPressed, RoutingStrategies.Tunnel);
@@ -46,30 +46,29 @@ namespace PdfPigBundle.Views
         {
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "文件名",
+                Header = "File Name",
                 Binding = new Binding("FileName"),
                 Width = new DataGridLength(3, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "页数",
+                Header = "Page Count",
                 Binding = new Binding("PageCount"),
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "大小",
+                Header = "File Size",
                 Binding = new Binding("FileSizeDisplay"),
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star)
             });
             FileDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "作者",
+                Header = "Author",
                 Binding = new Binding("Author"),
                 Width = new DataGridLength(1.5, DataGridLengthUnitType.Star)
             });
         }
-        // ---------- 添加文件 ----------
         private async void OnAddFilesClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var vm = DataContext as MainWindowViewModel;
@@ -77,7 +76,7 @@ namespace PdfPigBundle.Views
 
             var filters = new List<FilePickerFileType>
             {
-                new FilePickerFileType("PDF 文件")
+                new FilePickerFileType("PDF Files")
                 {
                     Patterns = new[] { "*.pdf" }
                 }
@@ -85,12 +84,11 @@ namespace PdfPigBundle.Views
 
             if (vm.EnableImageSupport)
             {
-                filters.Add(new FilePickerFileType("图片文件")
+                filters.Add(new FilePickerFileType("Image Files")
                 {
                     Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff" }
                 });
-                // 加一个“所有支持的文件”选项
-                filters.Add(new FilePickerFileType("所有支持的文件")
+                filters.Add(new FilePickerFileType("All Supported Files")
                 {
                     Patterns = new[] { "*.pdf", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff" }
                 });
@@ -108,12 +106,11 @@ namespace PdfPigBundle.Views
             }
         }
 
-        // ---------- 浏览输出路径  ----------
         private async void OnBrowseOutputClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var folder = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "选择输出目录"
+                Title = "Select Output Directory"
             });
 
             if (folder != null && folder.Count > 0)
@@ -129,7 +126,6 @@ namespace PdfPigBundle.Views
             }
         }
 
-        // ---------- 关于  ----------
         private async void OnAboutClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await App.ShowAboutDialogAsync();
@@ -157,7 +153,7 @@ namespace PdfPigBundle.Views
                     var filePaths = files.Select(f => f.Path.LocalPath).ToArray();
                     if (DataContext is MainWindowViewModel vm)
                     {
-                        // 调用 ViewModel 的同步方法（内部自动处理异步）
+                        // call ViewModel's synchronous method (internally handles async)
                         vm.AddFiles(filePaths);
                     }
                 }
@@ -169,7 +165,7 @@ namespace PdfPigBundle.Views
             {
                 if (string.IsNullOrEmpty(vm.OutputPath))
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("提示", "输出路径为空，请先设置输出路径。");
+                    var box = MessageBoxManager.GetMessageBoxStandard("Warning", "Output path is empty. Please set the output path first.");
                     await box.ShowAsync();
                     return;
                 }
@@ -177,7 +173,7 @@ namespace PdfPigBundle.Views
                 var directory = Path.GetDirectoryName(vm.OutputPath);
                 if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("提示", "输出目录不存在。");
+                    var box = MessageBoxManager.GetMessageBoxStandard("Warning", "Output directory does not exist.");
                     await box.ShowAsync();
                     return;
                 }
@@ -207,7 +203,7 @@ namespace PdfPigBundle.Views
             {
                 _dragStartPoint = e.GetPosition(sender as Visual);
                 _dragItem = (sender as DataGrid)?.SelectedItem as FileItem;
-                _dragPressedArgs = e;  // 保存事件参数
+                _dragPressedArgs = e;  // Save event args
                 Debug.WriteLine($"  Selected: {_dragItem?.FileName}");
             }
         }
@@ -222,11 +218,11 @@ namespace PdfPigBundle.Views
             {
                 var dragData = new DataTransfer();
                 dragData.Add(DataTransferItem.Create(FileItemFormat, _dragItem));
-                // 使用保存的 _dragPressedArgs 作为第一个参数
+                // Use the saved _dragPressedArgs as the first parameter
                 await DragDrop.DoDragDropAsync(_dragPressedArgs, dragData, DragDropEffects.Move);
                 Debug.WriteLine("Drag finished");
 
-                // 重置状态
+                // Reset state
                 _dragStartPoint = null;
                 _dragItem = null;
                 _dragPressedArgs = null;
@@ -260,7 +256,7 @@ namespace PdfPigBundle.Views
             Debug.WriteLine("Drop");
             e.Handled = true;
 
-            //  外部文件拖放
+            //  External file drop
             if (e.DataTransfer.Formats.Contains(DataFormat.File))
             {
                 Debug.WriteLine("  Dropped files");
@@ -276,7 +272,7 @@ namespace PdfPigBundle.Views
                 return;
             }
 
-            // 内部行拖拽
+            // Internal row drag
             var draggedItem = e.DataTransfer.TryGetValue<FileItem>(FileItemFormat);
             if (draggedItem != null)
             {

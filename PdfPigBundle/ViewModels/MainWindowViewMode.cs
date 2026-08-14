@@ -120,7 +120,7 @@ namespace PdfPigBundle.ViewModel
             (RemoveSelectedCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
 
-        #region  公开方法供 View 调用（添加文件、设置输出路径） 
+        #region public methods for View to call (add files, set output path) 
         public void AddFiles(string[] paths)
         {
             if (paths == null || paths.Length == 0) return;
@@ -146,16 +146,16 @@ namespace PdfPigBundle.ViewModel
                     if (File.Exists(path) && (EnableAddDuplicateCheck ? !FileItems.Any(f => f.FilePath == path) : true))
                     {
                         var item = new FileItem { FilePath = path, FileName = Path.GetFileName(path) };
-                        // 判断文件类型
+                        // determine file type
                         string ext = Path.GetExtension(path).ToLower();
                         if (ext == ".pdf")
                             item.Type = FileType.Pdf;
                         else if (EnableImageSupport && (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff"))
                             item.Type = FileType.Image;
                         else
-                            continue; // 不支持的类型，跳过
+                            continue; // unsupported type, skip
 
-                        // 读取信息（PDF 读取页数、作者；图片可以不读或读尺寸，但暂时保留简单信息）
+                        // read information (PDF read page count, author; image can be ignored or read size, but temporarily keep simple information)
                         try
                         {
                             if (item.Type == FileType.Pdf) // pdf file
@@ -184,7 +184,7 @@ namespace PdfPigBundle.ViewModel
                             }
                             else  // image file
                             {
-                                // 图片：页数设为1，作者设为"图片"
+                                // image: set page count to 1, author to "Img"
                                 item.PageCount = 1;
                                 item.Author = "Img";
                             }
@@ -198,13 +198,13 @@ namespace PdfPigBundle.ViewModel
                             item.FileSize = 0;
                         }
 
-                        // 通过 Dispatcher 将添加操作封送到 UI 线程
+                        // marshal the add operation to the UI thread via Dispatcher
                         Avalonia.Threading.Dispatcher.UIThread.Post(() => FileItems.Add(item));
                     }
                 }
             }).ContinueWith(_ =>
             {
-                // 当所有文件处理完成后，更新状态（也在 UI 线程）
+                // when all files are processed, update status (also on UI thread)
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     UpdateCanMerge();
@@ -223,8 +223,8 @@ namespace PdfPigBundle.ViewModel
 
         #endregion
 
-        #region 私有方法（清空、上移、下移、删除选中、合并）
-        // ---------- 清空 ----------
+        #region private methods (clear, move up, move down, remove selected, merge)
+        // ---------- clear ----------
         private void ClearList()
         {
             FileItems.Clear();
@@ -237,7 +237,7 @@ namespace PdfPigBundle.ViewModel
 
         }
 
-        // ---------- 上移 ----------
+        // ---------- move up ----------
         private void MoveUp()
         {
             if (SelectedItem == null) return;
@@ -252,7 +252,7 @@ namespace PdfPigBundle.ViewModel
             }
         }
 
-        // ---------- 下移 ----------
+        // ---------- move down ----------
         private void MoveDown()
         {
             if (SelectedItem == null) return;
@@ -267,7 +267,7 @@ namespace PdfPigBundle.ViewModel
             }
         }
 
-        // ---------- 删除选中 ----------
+        // ---------- remove selected ----------
         private void RemoveSelected()
         {
             if (SelectedItem != null)
@@ -292,34 +292,33 @@ namespace PdfPigBundle.ViewModel
                 {
                     FileItems.Remove(item);
                 }
-                // 触发消息事件
+                // trigger message event
                 var msg = T("Message_RemovedMissing", missingFiles.Count);
                 ShowMessageRequested?.Invoke(this, msg);
-                return true; // 有缺失
+                return true; // missing files found
             }
-            return false; // 无缺失
+            return false; // no missing files
         }
-        // ---------- 合并 ----------
+        // ---------- merge ----------
         private async Task MergePdfs()
         {
             if (CheckAndCleanMissingFiles())
             {
                 StatusMessage = T("Status_RemovedMissing");
-                // 更新按钮状态
                 UpdateCanMerge();
                 return;
             }
 
             if (FileItems.Count == 0 || string.IsNullOrEmpty(OutputPath)) return;
 
-            // ---- 处理输出文件已存在的情况 生成带序号的新路径----
-            string originalPath = OutputPath;          // 保存用户指定的原始路径
+            // ---- handle the case where the output file already exists, generate a new path with a sequence number----
+            string originalPath = OutputPath;          // save the original path specified by the user
             string finalPath = originalPath;
 
             if (File.Exists(finalPath))
             {
                 string directory = Path.GetDirectoryName(originalPath)!;
-                string baseName = Path.GetFileNameWithoutExtension(originalPath); // 原始文件名（不含扩展名）
+                string baseName = Path.GetFileNameWithoutExtension(originalPath);
                 string extension = Path.GetExtension(originalPath);
 
                 int counter = 1;
@@ -330,7 +329,7 @@ namespace PdfPigBundle.ViewModel
                     counter++;
                 } while (File.Exists(finalPath));
 
-                // 更新 OutputPath 属性，界面同步显示新路径
+                // update OutputPath property, UI will display the new path
                 OutputPath = finalPath;
             }
 
@@ -443,7 +442,7 @@ namespace PdfPigBundle.ViewModel
         }
         #endregion
 
-        #region  PDF 文档属性
+        #region  PDF document properties
         private bool _isSubjectManuallySet = false;
         private string _docTitle = "MergeredFiles";
         public string DocTitle
