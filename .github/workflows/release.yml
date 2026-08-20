@@ -53,7 +53,7 @@ jobs:
           Write-Host "Building version: $version"
           #  publish commands...
           $rid = "${{ matrix.rid }}"
-          $projFolder = "PdfMerger"
+          $projFolder = "PDFMerger"
           $projName = "PDFMerger"
           $baseOutput = "publish/${projName}.${version}.${rid}"
           $bundledOutput = "publish/${projName}.${version}.${rid}-bundled"
