@@ -199,6 +199,7 @@ namespace PdfMerger.Services
                 gfx.DrawImage(xImage, x, y, drawWidth, drawHeight);
             }
         }
+        private const int MAX_IMAGE_DIMENSION = 2560;
         /// <summary>
         /// used for macOS and non-standard images to ensure cross-platform compatibility.
         /// </summary>
@@ -209,6 +210,15 @@ namespace PdfMerger.Services
                 using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath);
                 // Automatically handle EXIF orientation for images taken by iPhone/Mac to prevent upside-down rendering
                 image.Mutate(x => x.AutoOrient());
+
+                if (image.Width > MAX_IMAGE_DIMENSION || image.Height > MAX_IMAGE_DIMENSION)
+                {
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Mode = ResizeMode.Max,
+                        Size = new SixLabors.ImageSharp.Size(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
+                    }));
+                }
 
                 var ms = new MemoryStream();
                 image.Save(ms, new PngEncoder());
