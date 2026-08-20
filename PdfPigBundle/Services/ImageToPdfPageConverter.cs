@@ -204,10 +204,6 @@ namespace PdfPigBundle.Services
 
             using (var tempDoc = ConvertImageToPdfDocument(imagePath, mode, customWidth, customHeight))
             {
-                // import pages from tempDoc to targetDoc (using PdfReader.Open in Import mode)
-                // since we already have tempDoc, but PdfDocument cannot be directly imported, we need to save to a stream and then open
-                // simpler: directly iterate pages and add to targetDoc (but page belongs to tempDoc, cannot directly AddPage)
-                // correct approach: use PdfReader.Open in Import mode to open the stream saved from tempDoc
                 using (var ms = new MemoryStream())
                 {
                     tempDoc.Save(ms);
