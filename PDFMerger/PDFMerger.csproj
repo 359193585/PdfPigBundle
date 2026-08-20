@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AssemblyName>PDFMerger</AssemblyName>
+
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+      
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+	
+	
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\*.png" />
+		<AvaloniaResource Include="Assets\*.ico" />
+        <AvaloniaResource Include="Assets\*.icns" />
+        <AvaloniaResource Include="Assets\*.ttf" />
+		<None Include="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="Assets\*.ico" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.icns" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.ttf" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+    <ItemGroup>
+        <None Update="I18n\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Win32" Version="12.1.0" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Lang.Avalonia" Version="12.0.2" />
+    <PackageReference Include="Lang.Avalonia.Json" Version="12.0.2" />
+    <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove=".github\**" />
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
+  </ItemGroup>
+</Project>

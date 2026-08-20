@@ -17,7 +17,7 @@ if [ -z "$VERSION" ]; then
 fi
 echo "📌 版本号: $VERSION"
 
-PROJECT_DIR_NAME="PdfPigBundle"   # 项目文件夹名（用于定位源代码和发布路径）
+PROJECT_DIR_NAME="PDFMerger"   # 项目文件夹名（用于定位源代码和发布路径）
 APP_NAME="PDFMerger"
 OUTPUT_DIR="./publish"
 

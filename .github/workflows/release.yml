@@ -51,9 +51,9 @@ jobs:
             exit 1
           }
           Write-Host "Building version: $version"
-          # 以下为原有 publish 命令...
+          #  publish commands...
           $rid = "${{ matrix.rid }}"
-          $projFolder = "PdfPigBundle"
+          $projFolder = "PdfMerger"
           $projName = "PDFMerger"
           $baseOutput = "publish/${projName}.${version}.${rid}"
           $bundledOutput = "publish/${projName}.${version}.${rid}-bundled"

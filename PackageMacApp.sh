@@ -12,7 +12,7 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-PROJECT_DIR_NAME="PdfPigBundle"   # 项目文件夹名（用于定位源代码和发布路径）
+PROJECT_DIR_NAME="PDFMerger"   # 项目文件夹名（用于定位源代码和发布路径）
 APP_NAME="PDFMerger"              # 最终应用名称（用户看到的名称）
 BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID 
 

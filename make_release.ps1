@@ -15,7 +15,7 @@ if (-not (Get-Command Resolve-Path -ErrorAction SilentlyContinue)) {
 }
 
 # 项目文件夹名
-$PROJ_FOLDER = "PdfPigBundle"
+$PROJ_FOLDER = "PDFMerger"
 
 # 发布产物名称（用户看到的名称）
 $PROJ_NAME = "PDFMerger"

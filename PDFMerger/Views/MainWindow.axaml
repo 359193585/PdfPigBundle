@@ -1,0 +1,255 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="https://codewf.com"
+        xmlns:vm="using:PdfMerger.ViewModel"
+        x:Class="PdfMerger.Views.MainWindow"
+        x:CompileBindings="False"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{c:I18n MainWindow_Title}"
+        Width="980" Height="640"
+        DragDrop.AllowDrop="True"
+        DragDrop.DragOver="OnDragOver"
+        DragDrop.Drop="OnDrop"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <!-- light theme -->
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F0F4F8" />
+          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#2C3E50" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#7F8C8D" />
+          <SolidColorBrush x:Key="BorderBrush" Color="#CCD1D9" />
+          <SolidColorBrush x:Key="CardBackgroundBrush" Color="White" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#E0E6ED" />
+          <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F4F8FC" />
+        </ResourceDictionary>
+        <!-- dark theme -->
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1E1E1E" />
+          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E0E0E0" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A0A0A0" />
+          <SolidColorBrush x:Key="BorderBrush" Color="#3D3D3D" />
+          <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2D2D2D" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#404040" />
+          <SolidColorBrush x:Key="InputBackgroundBrush" Color="#3A3A3A" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+
+
+  <Grid Margin="20" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" RowSpacing="10">
+    <!-- toolbar (Row 0) -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,5">
+      <Button Content="{c:I18n MainWindow_AddFile}"
+              Click="OnAddFilesClicked"
+              Background="#4A90D9"
+              Foreground="White"
+              CornerRadius="8"
+              Padding="12,6" />
+      <Button Content="{c:I18n MainWindow_ClearList}"
+              Command="{Binding ClearListCommand}"
+              Background="#E74C3C"
+              Foreground="White"
+              CornerRadius="8"
+              Padding="10,6" />
+      <Button Content="{c:I18n MainWindow_MoveUp}"
+              Command="{Binding MoveUpCommand}"
+              Background="#F39C12"
+              Foreground="White"
+              CornerRadius="8"
+              Padding="10,6" />
+      <Button Content="{c:I18n MainWindow_MoveDown}"
+              Command="{Binding MoveDownCommand}"
+              Background="#F39C12"
+              Foreground="White"
+              CornerRadius="8"
+              Padding="10,6" />
+      <Button Content="{c:I18n MainWindow_RemoveSelected}"
+              Command="{Binding RemoveSelectedCommand}"
+              Background="#E67E22"
+              Foreground="White"
+              CornerRadius="8"
+              Padding="10,6" />
+
+      <Border Width="1" Background="{DynamicResource BorderBrush}" Margin="5,0" />
+
+      <CheckBox Content="{c:I18n MainWindow_EnableDeduplication}"
+                IsChecked="{Binding EnableAddDuplicateCheck}"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextPrimaryBrush}" />
+      <CheckBox Content="{c:I18n MainWindow_AddPageNumbers}"
+                IsChecked="{Binding AddPageNumbers}"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextPrimaryBrush}" />
+      <CheckBox Content="{c:I18n MainWindow_EnableImageSupport}"
+                IsChecked="{Binding EnableImageSupport}"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextPrimaryBrush}" />
+
+      <Button Content="{c:I18n MainWindow_About}"
+              Margin="15,0,0,0"
+              Command="{Binding AboutCommand}"
+              Background="Transparent"
+              Foreground="{DynamicResource SystemAccentColor}"
+              BorderThickness="0" />
+    </StackPanel>
+
+    <!-- file list (Row 1) -->
+    <DataGrid Grid.Row="1"
+              x:Name="FileDataGrid"
+              ItemsSource="{Binding FileItems}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+              IsReadOnly="True"
+              AutoGenerateColumns="False"
+              SelectionMode="Single"
+              CanUserReorderColumns="False"
+              CanUserSortColumns="False"
+              Margin="0,0,0,0"
+              Background="{DynamicResource CardBackgroundBrush}"
+              BorderBrush="{DynamicResource CardBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="8"
+              >
+
+      <DataGrid.Styles>
+        <Style Selector="DataGridCell">
+          <Setter Property="FontSize" Value="12" />
+          <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+      </DataGrid.Styles>
+    </DataGrid>
+
+    <!-- output path (Row 2) -->
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,5">
+      <TextBlock Text="{c:I18n MainWindow_OutputPath}"
+                 VerticalAlignment="Center"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextPrimaryBrush}" />
+      <TextBox Grid.Column="1"
+               Text="{Binding OutputPath}"
+               IsReadOnly="True"
+               Background="{DynamicResource InputBackgroundBrush}"
+               Foreground="{DynamicResource TextPrimaryBrush}"
+               CornerRadius="6"
+               Padding="8,4" />
+      <Button Grid.Column="2"
+              Content="{c:I18n MainWindow_Browse}"
+              Click="OnBrowseOutputClicked"
+              Margin="5,0,5,0"
+              Background="#5DADE2"
+              Foreground="White"
+              CornerRadius="6"
+              Padding="12,4" />
+      <Button Grid.Column="3"
+              Content="{c:I18n MainWindow_OpenFolder}"
+              Click="OnOpenFolderClicked"
+              Background="#4A90D9"
+              Foreground="White"
+              CornerRadius="6"
+              Padding="12,4" />
+    </Grid>
+
+    <!-- document information (Row 3) -->
+    <Border Grid.Row="3" Margin="0,5,0,5"
+            Background="{DynamicResource CardBackgroundBrush}"
+            CornerRadius="10"
+            Padding="12,8"
+            BorderBrush="{DynamicResource CardBorderBrush}"
+            BorderThickness="1">
+      <StackPanel>
+        <TextBlock Text="{c:I18n MainWindow_MetadataInfo}"
+                   FontSize="11"
+                   Opacity="0.7"
+                   Margin="0,0,0,8"
+                   Foreground="{DynamicResource TextSecondaryBrush}" />
+        <Grid ColumnDefinitions="2*,1*,2*,1*" ColumnSpacing="10">
+          <DockPanel Grid.Column="0">
+            <TextBlock Text="{c:I18n MainWindow_TitleLabel}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       DockPanel.Dock="Left" Width="40" />
+            <TextBox Text="{Binding DocTitle}"
+                     CornerRadius="4"
+                     Padding="4,2"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+          </DockPanel>
+          <DockPanel Grid.Column="1">
+            <TextBlock Text="{c:I18n MainWindow_AuthorLabel}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       DockPanel.Dock="Left" Width="40" />
+            <TextBox Text="{Binding DocAuthor}"
+                     CornerRadius="4"
+                     Padding="4,2"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+          </DockPanel>
+          <DockPanel Grid.Column="2">
+            <TextBlock Text="{c:I18n MainWindow_SubjectLabel}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       DockPanel.Dock="Left" Width="40" />
+            <TextBox Text="{Binding DocSubject}"
+                     CornerRadius="4"
+                     Padding="4,2"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+          </DockPanel>
+          <DockPanel Grid.Column="3">
+            <TextBlock Text="{c:I18n MainWindow_CreatorLabel}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       DockPanel.Dock="Left" Width="50" />
+            <TextBox Text="{Binding DocCreator}"
+                     CornerRadius="4"
+                     Padding="4,2"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+          </DockPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- progress bar and status (Row 4) -->
+    <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,0,0,5">
+      <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"
+                   Height="20" CornerRadius="10"
+                   Foreground="#4A90D9"
+                   Background="#E8EEF4" />
+      <TextBlock Grid.Row="1" Text="{Binding StatusMessage}"
+                 Margin="0,5,0,0"
+                 Foreground="{DynamicResource TextPrimaryBrush}"
+                 FontSize="13" />
+    </Grid>
+
+    <!-- merge button (Row 5) -->
+    <Button Grid.Row="5"
+            Name="MergeButton"
+            Content="{c:I18n MainWindow_StartMerge}"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
+            Width="140"
+            Height="40"
+            Command="{Binding MergeCommand}"
+            IsEnabled="{Binding CanMerge}"
+            Background="#4A90D9"
+            Foreground="White"
+            CornerRadius="20"
+            FontWeight="SemiBold"
+            FontSize="14"
+            Cursor="Hand">
+      <Button.Styles>
+        <Style Selector="Button:pointerover">
+          <Setter Property="Background" Value="#2ECC71" />
+        </Style>
+        <Style Selector="Button:disabled">
+          <Setter Property="Background" Value="#BDC3C7" />
+        </Style>
+      </Button.Styles>
+    </Button>
+  </Grid>
+</Window>
