@@ -5,8 +5,9 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace PdfMerger.Services
 {
@@ -20,27 +21,13 @@ namespace PdfMerger.Services
         /// </summary>
         public enum PageSizeMode
         {
-            /// <summary>page size automatically fits the image size</summary>
             FitImage,
-            /// <summary>fixed A4 size (595×842 points), image is centered and scaled to fit</summary>
             A4,
-            /// <summary>custom size (requires specifying width and height)</summary>
             Custom
         }
 
-        /// <summary>
-        /// default page size mode
-        /// </summary>
         public PageSizeMode DefaultMode { get; set; } = PageSizeMode.FitImage;
-
-        /// <summary>
-        /// default custom width (points), used when DefaultMode = Custom
-        /// </summary>
         public double? DefaultCustomWidth { get; set; }
-
-        /// <summary>
-        /// default custom height (points), used when DefaultMode = Custom
-        /// </summary>
         public double? DefaultCustomHeight { get; set; }
 
         /// <summary>
@@ -59,7 +46,7 @@ namespace PdfMerger.Services
             DefaultCustomHeight = defaultCustomHeight;
         }
 
-        // ---------- from file path ----------
+        // ---------- From File Path ----------
 
         /// <summary>
         /// converts an image file to a PDF document (using default settings)
@@ -73,31 +60,13 @@ namespace PdfMerger.Services
         public PdfDocument ConvertImageToPdfDocument(string imagePath, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
             if (!File.Exists(imagePath))
-                throw new FileNotFoundException("image file not found", imagePath);
-
-            bool isJpg = imagePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                imagePath.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase);
-            try
-            {
-
-                using (var stream = File.OpenRead(imagePath))
-                    return ConvertImageToPdfDocument(stream, mode, customWidth, customHeight);
-            }
-            catch (Exception) when (isJpg) 
-            {
-                using (var ms = new MemoryStream())
-                {
-                    using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath))
-                    {
-                        image.Save(ms, new PngEncoder());
-                        ms.Position = 0;
-                        return ConvertImageToPdfDocument(ms, mode, customWidth, customHeight);
-                    }
-                }
-            }
+                throw new FileNotFoundException("Image file not found", imagePath);
+            var doc = new PdfDocument();
+            AddImagePageToDocument(imagePath, doc, mode, customWidth, customHeight);
+            return doc;
         }
 
-        // ---------- from byte array ----------
+        // ---------- From Byte Array ----------
 
         /// <summary>
         /// converts an image byte array to a PDF document (using default settings)
@@ -111,7 +80,7 @@ namespace PdfMerger.Services
         public PdfDocument ConvertImageToPdfDocument(byte[] imageData, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
             if (imageData == null || imageData.Length == 0)
-                throw new ArgumentException("image data cannot be null or empty", nameof(imageData));
+                throw new ArgumentException("Image data cannot be null or empty", nameof(imageData));
 
             using (var ms = new MemoryStream(imageData))
                 return ConvertImageToPdfDocument(ms, mode, customWidth, customHeight);
@@ -130,90 +99,125 @@ namespace PdfMerger.Services
         /// </summary>
         public PdfDocument ConvertImageToPdfDocument(Stream imageStream, PageSizeMode mode, double? customWidth = null, double? customHeight = null)
         {
-            if (imageStream == null || !imageStream.CanRead)
-                throw new ArgumentException("invalid image stream", nameof(imageStream));
-
-            // determine page size
-            double pageWidth, pageHeight;
-            switch (mode)
-            {
-                case PageSizeMode.FitImage:
-                    // use XImage.FromStream to read directly, but be aware the stream may be consumed.
-                    using (var tempImage = XImage.FromStream(imageStream))
-                    {
-                        pageWidth = tempImage.PointWidth;
-                        pageHeight = tempImage.PointHeight;
-                    }
-                    // but at this point the stream has been read, subsequent drawing requires re-reading the image. reposition the stream
-                    if (imageStream.CanSeek)
-                        imageStream.Seek(0, SeekOrigin.Begin);
-                    else
-                        throw new InvalidOperationException("stream cannot be reset, cannot read multiple times. please use a byte array or a resettable stream.");
-                    break;
-                case PageSizeMode.A4:
-                    pageWidth = 595;
-                    pageHeight = 842;
-                    break;
-                case PageSizeMode.Custom:
-                    if (!customWidth.HasValue || !customHeight.HasValue)
-                        throw new ArgumentException("Custom mode requires specifying customWidth and customHeight");
-                    pageWidth = customWidth.Value;
-                    pageHeight = customHeight.Value;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mode), "unsupported page size mode");
-            }
-
-            // create document and page
             var doc = new PdfDocument();
-            var page = doc.AddPage();
-            page.Width = XUnit.FromPoint(pageWidth);
-            page.Height = XUnit.FromPoint(pageHeight);
-
-            // draw image (if mode is FitImage, we have already read it, reposition the stream and read again)
-            using (var gfx = XGraphics.FromPdfPage(page))
-            {
-                // if mode is FitImage, we need to read the image again to draw; otherwise, only need to read once.
-                using (var image = XImage.FromStream(imageStream))
-                {
-                    double scaleX = pageWidth / image.PointWidth;
-                    double scaleY = pageHeight / image.PointHeight;
-                    double scale = Math.Min(scaleX, scaleY);
-
-                    double drawWidth = image.PointWidth * scale;
-                    double drawHeight = image.PointHeight * scale;
-                    double x = (pageWidth - drawWidth) / 2;
-                    double y = (pageHeight - drawHeight) / 2;
-
-                    gfx.DrawImage(image, x, y, drawWidth, drawHeight);
-                }
-            }
-
+            AddImageStreamToDocument(imageStream, doc, mode, customWidth, customHeight);
             return doc;
         }
 
         // ---------- simple method: directly add a page to an existing document ----------
 
         /// <summary>
-        /// converts an image to a page and directly adds it to the specified PdfDocument (does not return a new document)
+        /// Directly converts an image file and draws it onto a new page in the target PdfDocument without temporary document serializations.
         /// </summary>
-        public void AddImagePageToDocument(string imagePath, PdfDocument targetDoc, PageSizeMode mode = PageSizeMode.FitImage, double? customWidth = null, double? customHeight = null)
+        public void AddImagePageToDocument(
+            string imagePath,
+            PdfDocument targetDoc,
+            PageSizeMode mode = PageSizeMode.FitImage,
+            double? customWidth = null,
+            double? customHeight = null)
         {
             if (targetDoc == null)
                 throw new ArgumentNullException(nameof(targetDoc));
 
-            using (var tempDoc = ConvertImageToPdfDocument(imagePath, mode, customWidth, customHeight))
+            try
             {
-                using (var ms = new MemoryStream())
+                // Get the image stream and add it to the document on read mode. This is the standard approach for most image formats.
+                using var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                AddImageStreamToDocument(stream, targetDoc, mode, customWidth, customHeight);
+            }
+            catch (Exception)
+            {
+                // for macOS and non-standard images, Use ImageSharp for cross-platform image cleaning (Fix EXIF/CMYK/Corrupted Headers)
+                using var cleanedStream = CleanAndNormalizeImage(imagePath);
+                if (cleanedStream != null)
                 {
-                    tempDoc.Save(ms);
-                    ms.Position = 0;
-                    using (var importDoc = PdfReader.Open(ms, PdfDocumentOpenMode.Import))
-                    {
-                        foreach (PdfPage page in importDoc.Pages)
-                            targetDoc.AddPage(page);
-                    }
+                    AddImageStreamToDocument(cleanedStream, targetDoc, mode, customWidth, customHeight);
                 }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to process or normalize image file on current OS: {imagePath}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Core drawing logic: Draws an image stream directly into a target PdfDocument.
+        /// </summary>
+        public void AddImageStreamToDocument(
+            Stream imageStream,
+            PdfDocument targetDoc,
+            PageSizeMode mode,
+            double? customWidth = null,
+            double? customHeight = null)
+        {
+            if (imageStream == null || !imageStream.CanRead)
+                throw new ArgumentException("Invalid image stream", nameof(imageStream));
+
+            if (targetDoc == null)
+                throw new ArgumentNullException(nameof(targetDoc));
+
+            using var xImage = XImage.FromStream(imageStream);
+            double pageWidth, pageHeight;
+            switch (mode)
+            {
+                case PageSizeMode.FitImage:
+                    pageWidth = xImage.PointWidth;
+                    pageHeight = xImage.PointHeight;
+                    break;
+
+                case PageSizeMode.A4:
+                    pageWidth = 595.0;  // Standard A4 width in points
+                    pageHeight = 842.0; // Standard A4 height in points
+                    break;
+
+                case PageSizeMode.Custom:
+                    if (!customWidth.HasValue || !customHeight.HasValue)
+                        throw new ArgumentException("Custom mode requires specifying customWidth and customHeight");
+                    pageWidth = customWidth.Value;
+                    pageHeight = customHeight.Value;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), "Unsupported page size mode");
+            }
+
+            PdfPage page = targetDoc.AddPage();
+            page.Width = XUnit.FromPoint(pageWidth);
+            page.Height = XUnit.FromPoint(pageHeight);
+
+            using (XGraphics gfx = XGraphics.FromPdfPage(page))
+            {
+                double scaleX = pageWidth / xImage.PointWidth;
+                double scaleY = pageHeight / xImage.PointHeight;
+                double scale = Math.Min(scaleX, scaleY);
+
+                double drawWidth = xImage.PointWidth * scale;
+                double drawHeight = xImage.PointHeight * scale;
+                double x = (pageWidth - drawWidth) / 2.0;
+                double y = (pageHeight - drawHeight) / 2.0;
+
+                gfx.DrawImage(xImage, x, y, drawWidth, drawHeight);
+            }
+        }
+        /// <summary>
+        /// used for macOS and non-standard images to ensure cross-platform compatibility.
+        /// </summary>
+        private MemoryStream? CleanAndNormalizeImage(string imagePath)
+        {
+            try
+            {
+                using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath);
+                // Automatically handle EXIF orientation for images taken by iPhone/Mac to prevent upside-down rendering
+                image.Mutate(x => x.AutoOrient());
+
+                var ms = new MemoryStream();
+                image.Save(ms, new PngEncoder());
+                ms.Position = 0;
+                return ms;
+            }
+            catch
+            {
+                return null;
             }
         }
     }
