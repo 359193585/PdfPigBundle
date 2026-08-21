@@ -21,6 +21,7 @@
     "MainWindow_SubjectLabel": "Betreff:",
     "MainWindow_CreatorLabel": "Ersteller:",
     "MainWindow_StartMerge": "🚀 Zusammenführung starten",
+    "MainWindow_CancelMerge": "⏹️ Zusammenführung abbrechen",
     "Status_Ready": "Bereit",
     "Status_Loading": "Lese Dateiinformationen...",
     "Status_Encrypted": "❌ Datei ist verschlüsselt und kann nicht gelesen werden",

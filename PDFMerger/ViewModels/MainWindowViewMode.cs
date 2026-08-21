@@ -1,9 +1,11 @@
 // MainWindowViewMode.cs
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Lang.Avalonia;
@@ -13,20 +15,47 @@ using PdfMerger.Models;
 using PdfMerger.Service;
 using PdfMerger.Services;
 using PdfSharp.Pdf.IO;
+using SkiaSharp;
 
 namespace PdfMerger.ViewModel
 {
     public class MainWindowViewModel : ObservableObject
     {
-        private readonly PdfSharpMergeService _merger = new PdfSharpMergeService();
+        private readonly PdfSharpMergeService _pdfMergeService;
         public event EventHandler<string> ShowMessageRequested = delegate { };
+        public static string DefaultOutputPdfName = "outputOfMerge.pdf";
 
+        public MainWindowViewModel()
+        {
+            _pdfMergeService = new PdfSharpMergeService();
+            InitCommands();
+            FileItems.CollectionChanged += OnFileItemsChanged;
+        }
+
+        private void InitCommands()
+        {
+            AboutCommand = new RelayCommand(async () => await App.ShowAboutDialogAsync());
+            CancelCommand = new RelayCommand(CancelMerge, () => IsMerging);
+            ClearListCommand = new RelayCommand(ClearList);
+            MergeCommand = new RelayCommand(async () => await MergePdfs(), () => FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath) && !IsMerging);
+            MoveDownCommand = new RelayCommand(MoveDown, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) < FileItems.Count - 1);
+            MoveUpCommand = new RelayCommand(MoveUp, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) > 0);
+            RemoveSelectedCommand = new RelayCommand(RemoveSelected, () => SelectedItem != null);
+        }
+
+        #region Properties for binding to the view
 
         private string _outputPath = string.Empty;
         public string OutputPath
         {
             get => _outputPath;
-            set => SetProperty(ref _outputPath, value);
+            set
+            {
+                if (SetProperty(ref _outputPath, value))
+                {
+                    UpdateCanMerge();
+                }
+            }
         }
 
         private double _progressValue;
@@ -54,7 +83,13 @@ namespace PdfMerger.ViewModel
         public FileItem? SelectedItem
         {
             get => _selectedItem;
-            set => SetProperty(ref _selectedItem, value);
+            set
+            {
+                if (SetProperty(ref _selectedItem, value))
+                {
+                    UpdateMovementCommands();
+                }
+            }
         }
 
         private bool _enableAddDuplicateCheck = true;
@@ -70,52 +105,77 @@ namespace PdfMerger.ViewModel
             get => _enableImageSupport;
             set => SetProperty(ref _enableImageSupport, value);
         }
-        public ICommand ClearListCommand { get; }
-        public ICommand MoveUpCommand { get; }
-        public ICommand MoveDownCommand { get; }
-        public ICommand RemoveSelectedCommand { get; }
-        public ICommand AboutCommand { get; }
-
-        public ICommand MergeCommand { get; }
-
-        public static string DefaultOutputPdfName = "outputOfMerge.pdf";
-        public MainWindowViewModel()
+        // output PDF document properties
+        private bool _isSubjectManuallySet = false;
+        private string _docTitle = "MergedFiles";
+        public string DocTitle
         {
-            ClearListCommand = new RelayCommand(ClearList);
-            MoveUpCommand = new RelayCommand(MoveUp, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) > 0);
-            MoveDownCommand = new RelayCommand(MoveDown, () => SelectedItem != null && FileItems.IndexOf(SelectedItem) < FileItems.Count - 1);
-            RemoveSelectedCommand = new RelayCommand(RemoveSelected, () => SelectedItem != null);
+            get => _docTitle;
+            set => SetProperty(ref _docTitle, value);
+        }
 
-            AboutCommand = new RelayCommand(async () => await App.ShowAboutDialogAsync());
+        private string _docAuthor = "User of PDFMerger";
+        public string DocAuthor
+        {
+            get => _docAuthor;
+            set => SetProperty(ref _docAuthor, value);
+        }
 
-            MergeCommand = new RelayCommand(async () => await MergePdfs(), () => FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath));
-
-            FileItems.CollectionChanged += (s, e) =>
+        private string _docSubject = "";
+        public string DocSubject
+        {
+            get => _docSubject;
+            set
             {
-                UpdateCanMerge();
-                UpdateMovementCommands();
-            };
+                if (SetProperty(ref _docSubject, value))
+                    _isSubjectManuallySet = true;
+            }
+        }
 
-            PropertyChanged += (s, e) =>
+        private string _docCreator = "PDFMerger";
+        public string DocCreator
+        {
+            get => _docCreator;
+            set => SetProperty(ref _docCreator, value);
+        }
+
+        private bool _addPageNumbers;
+        public bool AddPageNumbers
+        {
+            get => _addPageNumbers;
+            set => SetProperty(ref _addPageNumbers, value);
+        }
+
+        // cancel support properties
+        private CancellationTokenSource? _cts;
+
+        private bool _isMerging;
+        public bool IsMerging
+        {
+            get => _isMerging;
+            set
             {
-                if (e.PropertyName == nameof(OutputPath))
+                if (SetProperty(ref _isMerging, value))
+                {
                     UpdateCanMerge();
-                else if (e.PropertyName == nameof(SelectedItem))
-                    UpdateMovementCommands();
-            };
+                }
+            }
         }
 
-        private void UpdateCanMerge()
+        private void CancelMerge()
         {
-            CanMerge = FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath);
-            (MergeCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            Debug.WriteLine($"---> [Cancel] 被调用了！时间: {DateTime.Now:HH:mm:ss.fff}");
+            _cts?.Cancel();
+            StatusMessage = T("Status_Cancelling", "Cancelling...");
         }
-        private void UpdateMovementCommands()
-        {
-            (MoveUpCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (MoveDownCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (RemoveSelectedCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        }
+        public ICommand AboutCommand { get; private set; } = null!;
+        public ICommand CancelCommand { get; private set; } = null!;
+        public ICommand ClearListCommand { get; private set; } = null!;
+        public ICommand MergeCommand { get; private set; } = null!;
+        public ICommand MoveDownCommand { get; private set; } = null!;
+        public ICommand MoveUpCommand { get; private set; } = null!;
+        public ICommand RemoveSelectedCommand { get; private set; } = null!;
+        #endregion
 
         #region public methods for View to call (add files, set output path) 
         public void AddFiles(string[] paths)
@@ -220,7 +280,12 @@ namespace PdfMerger.ViewModel
 
         #endregion
 
-        #region private methods (clear, move up, move down, remove selected, merge)
+        #region private methods (FileItemsChanged,clear, move up, move down, remove selected)
+        private void OnFileItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateCanMerge();
+            UpdateMovementCommands();
+        }
         // ---------- clear ----------
         private void ClearList()
         {
@@ -296,118 +361,7 @@ namespace PdfMerger.ViewModel
             }
             return false; // no missing files
         }
-        // ---------- merge ----------
-        private async Task MergePdfs()
-        {
-            if (CheckAndCleanMissingFiles())
-            {
-                StatusMessage = T("Status_RemovedMissing");
-                UpdateCanMerge();
-                return;
-            }
 
-            if (FileItems.Count == 0 || string.IsNullOrEmpty(OutputPath)) return;
-
-            // ---- handle the case where the output file already exists, generate a new path with a sequence number----
-            string originalPath = OutputPath;          // save the original path specified by the user
-            string finalPath = originalPath;
-
-            if (File.Exists(finalPath))
-            {
-                string directory = Path.GetDirectoryName(originalPath)!;
-                string baseName = Path.GetFileNameWithoutExtension(originalPath);
-                string extension = Path.GetExtension(originalPath);
-
-                int counter = 1;
-                do
-                {
-                    string newName = $"{baseName}_{counter}{extension}";
-                    finalPath = Path.Combine(directory, newName);
-                    counter++;
-                } while (File.Exists(finalPath));
-
-                // update OutputPath property, UI will display the new path
-                OutputPath = finalPath;
-            }
-
-            var filePaths = FileItems.Select(f => f.FilePath).ToArray();
-
-            CanMerge = false;
-            StatusMessage = T("Status_MergePreparing");
-            ProgressValue = 0;
-
-            try
-            {
-                var progress = new Progress<MergeProgress>(p =>
-                {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        if (p.IsComplete)
-                        {
-                            StatusMessage = T("Status_MergeComplete", p.TotalPagesProcessed);
-                            ProgressValue = 100;
-                        }
-                        else
-                        {
-                            StatusMessage = T("Status_MergeProgress",
-                                               p.FileIndex + 1,
-                                               p.TotalFiles,
-                                               p.FileName ?? string.Empty,
-                                               p.PageCount);
-                            ProgressValue = p.PercentComplete;
-                        }
-                    });
-                });
-
-                var options = new MergeOptions
-                {
-                    IgnoreDuplicates = false,
-                    Progress = progress,
-                    BookmarkGenerator = new SimpleBookmarkGenerator(),
-                    Title = DocTitle,
-                    Author = DocAuthor,
-                    Subject = DocSubject,
-                    Creator = DocCreator,
-                    AddPageNumbers = AddPageNumbers
-                };
-
-                if (CheckEncryptedFiles())
-                {
-                    StatusMessage = T("Message_Move_Encrypted");
-                    return;
-                }
-
-                var result = await Task.Run(() => _merger.Merge(filePaths, OutputPath, options));
-                try
-                {
-                    if (result != null)
-                    {
-
-                        if (result.Success)
-                        {
-                            StatusMessage = T("Status_MergerSuccess", result.TotalPages, result.OutputPath ?? string.Empty);
-                            if (result.DuplicatedFiles.Any())
-                                StatusMessage += T("Status_IgnoreDuplicateFiles", result.DuplicatedFiles);
-                        }
-                        else
-                        {
-                            StatusMessage = T("Status_MergeFailed", result.ErrorMessage ?? string.Empty);
-                        }
-                    }
-                }
-                catch { }
-
-
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = T("Status_MergeFailed", ex.Message);
-            }
-            finally
-            {
-                CanMerge = FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath);
-            }
-        }
 
         private bool CheckEncryptedFiles()
         {
@@ -439,49 +393,117 @@ namespace PdfMerger.ViewModel
         }
         #endregion
 
-        #region  PDF document properties
-        private bool _isSubjectManuallySet = false;
-        private string _docTitle = "MergeredFiles";
-        public string DocTitle
+        #region private core merging logic
+        private async Task MergePdfs()
         {
-            get => _docTitle;
-            set => SetProperty(ref _docTitle, value);
-        }
-
-        private string _docAuthor = "User of PDFMerger";
-        public string DocAuthor
-        {
-            get => _docAuthor;
-            set => SetProperty(ref _docAuthor, value);
-        }
-
-        private string _docSubject = "";
-        public string DocSubject
-        {
-            get => _docSubject;
-            set
+            if (CheckAndCleanMissingFiles())
             {
-                if (SetProperty(ref _docSubject, value))
-                    _isSubjectManuallySet = true;
+                StatusMessage = T("Status_RemovedMissing");
+                UpdateCanMerge();
+                return;
             }
-        }
 
-        private string _docCreator = "PDFMerger";
-        public string DocCreator
-        {
-            get => _docCreator;
-            set => SetProperty(ref _docCreator, value);
-        }
+            if (FileItems.Count == 0 || string.IsNullOrEmpty(OutputPath)) return;
 
-        private bool _addPageNumbers;
-        public bool AddPageNumbers
-        {
-            get => _addPageNumbers;
-            set => SetProperty(ref _addPageNumbers, value);
+            if (CheckEncryptedFiles())
+            {
+                StatusMessage = T("Message_Move_Encrypted");
+                return;
+            }
+
+            ResolveUniqueOutputPath();
+
+            _cts = new CancellationTokenSource();
+            IsMerging = true;
+            CanMerge = false;
+            StatusMessage = T("Status_MergePreparing");
+            ProgressValue = 0;
+
+            var filePaths = FileItems.Select(f => f.FilePath).ToArray();
+
+            var progress = new Progress<MergeProgress>(p =>
+            {
+                if (_cts == null || _cts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (_cts == null || _cts.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (p.IsComplete)
+                    {
+                        StatusMessage = T("Status_MergeComplete", p.TotalPagesProcessed);
+                        ProgressValue = 100;
+                    }
+                    else
+                    {
+                        StatusMessage = T("Status_MergeProgress",
+                                           p.FileIndex + 1,
+                                           p.TotalFiles,
+                                           p.FileName ?? string.Empty,
+                                           p.PageCount);
+                        ProgressValue = p.PercentComplete;
+                    }
+                });
+            });
+
+            var options = new MergeOptions
+            {
+                IgnoreDuplicates = false,
+                Progress = progress,
+                BookmarkGenerator = new SimpleBookmarkGenerator(),
+                Title = DocTitle,
+                Author = DocAuthor,
+                Subject = DocSubject,
+                Creator = DocCreator,
+                AddPageNumbers = AddPageNumbers,
+                CancellationToken = _cts.Token
+            };
+
+            try
+            {
+                var result = await _pdfMergeService.MergeAsync(filePaths, OutputPath, options, _cts.Token);
+                _cts.Token.ThrowIfCancellationRequested();
+                if (result != null)
+                {
+                    if (result.Success)
+                    {
+                        StatusMessage = T("Status_MergerSuccess", result.TotalPages, result.OutputPath ?? string.Empty);
+                        if (result.DuplicatedFiles.Any())
+                            StatusMessage += T("Status_IgnoreDuplicateFiles", result.DuplicatedFiles);
+                    }
+                    else
+                    {
+                        StatusMessage = T("Status_MergeFailed", result.ErrorMessage ?? string.Empty);
+                    }
+                }
+
+            }
+            catch (OperationCanceledException)
+            {
+                StatusMessage = T("Status_MergeCancelled");
+                ProgressValue = 0;
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = T("Status_MergeFailed", ex.Message);
+            }
+            finally
+            {
+                IsMerging = false;
+                _cts?.Dispose();
+                _cts = null;
+                CanMerge = FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath);
+            }
         }
         #endregion
 
-        #region datagrid dragover and drop operate
+        #region public methods for datagrid dragover and drop operate
         public ObservableCollection<FileItem> FileItems { get; } = new ObservableCollection<FileItem>();
         public void MoveFileItem(FileItem dragged, FileItem target)
         {
@@ -502,6 +524,19 @@ namespace PdfMerger.ViewModel
         }
         #endregion
 
+        #region private helper methods
+        private void UpdateCanMerge()
+        {
+            CanMerge = FileItems.Count > 0 && !string.IsNullOrEmpty(OutputPath) && !IsMerging; ;
+            (MergeCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (CancelCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
+        private void UpdateMovementCommands()
+        {
+            (MoveUpCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (MoveDownCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (RemoveSelectedCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
         private static string T(string key, params object[] args)
         {
             var value = I18nManager.Instance.GetResource(key);
@@ -509,5 +544,27 @@ namespace PdfMerger.ViewModel
                 return key;
             return args.Length > 0 ? string.Format(value, args) : value;
         }
+
+        private void ResolveUniqueOutputPath()
+        {
+            if (!File.Exists(OutputPath)) return;
+
+            string directory = Path.GetDirectoryName(OutputPath)!;
+            string baseName = Path.GetFileNameWithoutExtension(OutputPath);
+            string extension = Path.GetExtension(OutputPath);
+
+            int counter = 1;
+            string finalPath;
+            do
+            {
+                finalPath = Path.Combine(directory, $"{baseName}_{counter}{extension}");
+                counter++;
+            } while (File.Exists(finalPath));
+
+            OutputPath = finalPath;
+        }
+
+        
+        #endregion
     }
 }

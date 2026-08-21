@@ -21,6 +21,7 @@
     "MainWindow_SubjectLabel": "Subject:",
     "MainWindow_CreatorLabel": "Creator:",
     "MainWindow_StartMerge": "🚀 Start Merge",
+    "MainWindow_CancelMerge": "⏹️ Cancel",
     "Status_Ready": "Ready",
     "Status_Loading": "Reading file information...",
     "Status_Encrypted": "❌ File is encrypted and cannot be read",

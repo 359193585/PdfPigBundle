@@ -21,6 +21,7 @@
     "MainWindow_SubjectLabel": "件名：",
     "MainWindow_CreatorLabel": "作成者：",
     "MainWindow_StartMerge": "🚀 マージを開始",
+    "MainWindow_CancelMerge": "⏹️ マージをキャンセル",
     "Status_Ready": "準備完了",
     "Status_Loading": "ファイル情報を読み込み中...",
     "Status_Encrypted": "❌ ファイルは暗号化されており、読み取れません",

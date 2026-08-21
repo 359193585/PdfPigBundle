@@ -227,29 +227,59 @@
     </Grid>
 
     <!-- merge button (Row 5) -->
-    <Button Grid.Row="5"
-            Name="MergeButton"
-            Content="{c:I18n MainWindow_StartMerge}"
-            HorizontalAlignment="Center"
-            HorizontalContentAlignment="Center"
-            Width="140"
-            Height="40"
-            Command="{Binding MergeCommand}"
-            IsEnabled="{Binding CanMerge}"
-            Background="#4A90D9"
-            Foreground="White"
-            CornerRadius="20"
-            FontWeight="SemiBold"
-            FontSize="14"
-            Cursor="Hand">
-      <Button.Styles>
-        <Style Selector="Button:pointerover">
-          <Setter Property="Background" Value="#2ECC71" />
-        </Style>
-        <Style Selector="Button:disabled">
-          <Setter Property="Background" Value="#BDC3C7" />
-        </Style>
-      </Button.Styles>
-    </Button>
+    <StackPanel Grid.Row="5"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Spacing="12">
+      
+   
+        <Button Name="MergeButton"
+                Content="{c:I18n MainWindow_StartMerge}"
+                HorizontalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                Width="140"
+                Height="40"
+                Command="{Binding MergeCommand}"
+                IsEnabled="{Binding CanMerge}"
+                Background="#4A90D9"
+                Foreground="White"
+                CornerRadius="20"
+                FontWeight="SemiBold"
+                FontSize="14"
+                Cursor="Hand">
+          <Button.Styles>
+            <Style Selector="Button:pointerover">
+              <Setter Property="Background" Value="#2ECC71" />
+            </Style>
+            <Style Selector="Button:disabled">
+              <Setter Property="Background" Value="#BDC3C7" />
+            </Style>
+          </Button.Styles>
+        </Button>
+        
+        <Button Name="CancelButton"
+                Content="{c:I18n MainWindow_CancelMerge}"
+                HorizontalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                Width="140"
+                Height="40"
+                Command="{Binding CancelCommand}"
+                Background="#E74C3C"
+                Foreground="White"
+                CornerRadius="20"
+                FontWeight="SemiBold"
+                FontSize="14"
+                Cursor="Hand">
+          <Button.Styles>
+            <Style Selector="Button:pointerover">
+              <Setter Property="Background" Value="#C0392B" />
+            </Style>
+            <Style Selector="Button:disabled">
+              <Setter Property="Background" Value="#BDC3C7" />
+            </Style>
+          </Button.Styles>
+        </Button>
+    </StackPanel>
+
   </Grid>
 </Window>

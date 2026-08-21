@@ -1,6 +1,7 @@
 //MergeOptions.cs
 
 using System;
+using System.Threading;
 
 namespace PdfMerger.Contracts;
 public class MergeOptions
@@ -17,4 +18,6 @@ public class MergeOptions
     public IProgress<MergeProgress>? Progress { get; set; }
 
     public bool AddPageNumbers { get; set; } = false;
+
+    public CancellationToken CancellationToken { get; set; } = CancellationToken.None;
 }
