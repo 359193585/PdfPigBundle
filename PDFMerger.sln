@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{4B
 		.vscode\launch.json = .vscode\launch.json
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFMerger.Tests", "PDFMerger.Tests\PDFMerger.Tests.csproj", "{09DEB7FD-A1FD-4BDC-9477-09B79BBB6A2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{47ED85A1-6592-4D00-932D-A0F1E6A7D376}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47ED85A1-6592-4D00-932D-A0F1E6A7D376}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47ED85A1-6592-4D00-932D-A0F1E6A7D376}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09DEB7FD-A1FD-4BDC-9477-09B79BBB6A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09DEB7FD-A1FD-4BDC-9477-09B79BBB6A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09DEB7FD-A1FD-4BDC-9477-09B79BBB6A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09DEB7FD-A1FD-4BDC-9477-09B79BBB6A2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
