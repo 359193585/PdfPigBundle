@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Avalonia;
 
-namespace PdfPigBundle
+namespace PdfMerger
 {
     internal class Program
     {

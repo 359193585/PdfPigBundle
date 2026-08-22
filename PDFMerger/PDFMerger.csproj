@@ -5,19 +5,32 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-	  <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AssemblyName>PDFMerger</AssemblyName>
+
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+      
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 	
 	
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\*.png" />
 		<AvaloniaResource Include="Assets\*.ico" />
-		<AvaloniaResource Include="Assets\*.icns" />
+        <AvaloniaResource Include="Assets\*.icns" />
+        <AvaloniaResource Include="Assets\*.ttf" />
 		<None Include="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
 		<None Include="Assets\*.ico" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="Assets\*.icns" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.icns" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Assets\*.ttf" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
-	
+
+    <ItemGroup>
+        <None Update="I18n\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 	
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.0" />
@@ -30,17 +43,21 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Lang.Avalonia" Version="12.0.2" />
+    <PackageReference Include="Lang.Avalonia.Json" Version="12.0.2" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
-    <PackageReference Include="PdfPig" Version="0.1.15" />
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\MainWindowOld.axaml.cs">
-      <DependentUpon>MainWindowOld.axaml</DependentUpon>
-    </Compile>
+    <Resource Include="Assets\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <AvaloniaXaml Remove=".github\**" />
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
   </ItemGroup>
 </Project>

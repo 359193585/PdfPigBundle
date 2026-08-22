@@ -1,0 +1,164 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-14
+            rid: osx-x64
+          - os: macos-14
+            rid: osx-arm64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: ubuntu-latest
+            rid: linux-arm64
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: No version found in tag name. Tag must start with 'v'."
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Publish base and bundled
+        run: |
+          $version = "${{ env.VERSION }}"
+          if (-not $version) {
+            Write-Error "Version is empty. Please check the tag format."
+            exit 1
+          }
+          Write-Host "Building version: $version"
+          #  publish commands...
+          $rid = "${{ matrix.rid }}"
+          $projFolder = "PDFMerger"
+          $projName = "PDFMerger"
+          $baseOutput = "publish/${projName}.${version}.${rid}"
+          $bundledOutput = "publish/${projName}.${version}.${rid}-bundled"
+
+          $baseArgs = @(
+            "publish", "./${projFolder}/${projFolder}.csproj",
+            "-c", "Release",
+            "-r", $rid,
+            "-p:Version=$version",
+            "-p:AssemblyVersion=$version.0",
+            "-p:FileVersion=$version.0",
+            "-p:InformationalVersion=$version"
+          )
+          $baseArgs += @("-p:ApplicationIcon=Assets/icon.ico")
+
+          # Base 版
+          dotnet @baseArgs `
+            --self-contained false `
+            -p:SelfContained=false `
+            -p:PublishSelfContained=false `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=false `
+            --output $baseOutput
+
+          # Bundled 版
+          dotnet @baseArgs `
+            --self-contained true `
+            -p:SelfContained=true `
+            -p:PublishSelfContained=true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfContained=true `
+            -p:PublishReadyToRun=false `
+            --output $bundledOutput
+        shell: pwsh
+
+      - name: Remove .pdb files
+        run: |
+          Get-ChildItem -Path "publish" -Recurse -Filter "*.pdb" | Remove-Item -Force
+        shell: pwsh
+
+      # ---------- Windows 打包 ----------
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        run: |
+          $version = "${{ env.VERSION }}"
+          $rid = "${{ matrix.rid }}"
+          $projName = "PDFMerger"
+          $dirs = @(
+            "publish/${projName}.${version}.${rid}",
+            "publish/${projName}.${version}.${rid}-bundled"
+          )
+          foreach ($dir in $dirs) {
+            if (Test-Path $dir) {
+              Compress-Archive -Path "$dir\*" -DestinationPath "$dir.zip" -Force
+              Remove-Item -Recurse -Force $dir
+            }
+          }
+        shell: pwsh
+
+      # ---------- Linux 打包 ----------
+      - name: Package Linux
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x ./PackageLinuxApp.sh
+          ./PackageLinuxApp.sh ${{ env.VERSION }}
+        shell: bash
+
+      # ---------- macOS 打包 ----------
+      - name: Package macOS
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x ./PackageMacApp.sh
+          ./PackageMacApp.sh ${{ env.VERSION }}
+        shell: bash
+
+      # ---------- 上传产物 ----------
+      - name: Debug version
+        run: echo "Version is ${{ env.VERSION }}"
+        shell: bash
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.rid }}-v${{ env.VERSION }}
+          path: |
+            publish/*.tar.gz
+            publish/*.zip
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/**/*.tar.gz
+            ./artifacts/**/*.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

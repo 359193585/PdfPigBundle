@@ -1,74 +1,41 @@
 #!/bin/bash
 # run in wsl2 ubuntu 22.04 ,do not run in windows powershell
-# 用法: ./PackageMacApp.ps1 [版本号]
-# 如果不指定版本号，将从 arm64 发布目录中提取
+# 用法: ./PackageMacApp.sh [版本号]
+#       ./PackageMacApp.sh 1.2.3
 
-echo "mac app publishing (both x64 and arm64)..."
+echo "mac app publishing (both arm64 and x86 )..."
 set -e
 
-APP_NAME="PdfPigBundle"
-BUNDLE_ID="com.leison.pdfpigbundle"
-VERSION=${1:-""}  # 可选参数，若留空则自动提取
-
-PROJ_NAME="PdfPigBundle"
-
-# 定义多个可能的发布目录（按优先级）
-POSSIBLE_PATHS=(
-    "./publish"
-    "/mnt/e/Develop_Vs2022/${PROJ_NAME}/publish"
-)
-
-# 查找实际存在的发布基础目录
-PUBLISH_BASE=""
-for path in "${POSSIBLE_PATHS[@]}"; do
-    if [ -d "$path" ] && ls "$path"/${PROJ_NAME}.*.osx-*-bundled 1>/dev/null 2>&1; then
-        PUBLISH_BASE="$path"
-        echo "✅ 找到发布目录: $PUBLISH_BASE"
-        break
-    fi
-done
-
-if [ -z "$PUBLISH_BASE" ]; then
-    echo "❌ 未找到任何包含 ${PROJ_NAME}.*.osx-*-bundled 的发布目录"
-    echo "请检查路径: ${POSSIBLE_PATHS[@]}"
+VERSION=$1
+if [ -z "$VERSION" ]; then
+    echo "❌ 缺少版本号"
     exit 1
 fi
 
-# 如果未指定版本号，从 arm64 发布目录中提取（优先），若没有则从 x64 提取
-if [ -z "$VERSION" ]; then
-    # 尝试 arm64
-    ARM64_DIR=$(ls -td "$PUBLISH_BASE"/${PROJ_NAME}.*.osx-arm64-bundled 2>/dev/null | head -1)
-    if [ -n "$ARM64_DIR" ]; then
-        FOLDER_NAME=$(basename "$ARM64_DIR")
-        if [[ $FOLDER_NAME =~ ${PROJ_NAME}\.([0-9]+\.[0-9]+\.[0-9]+)\.osx-arm64-bundled ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "📌 从 arm64 目录提取版本号: $VERSION"
-        fi
-    fi
-    # 如果仍未提取到，尝试 x64
-    if [ -z "$VERSION" ]; then
-        X64_DIR=$(ls -td "$PUBLISH_BASE"/${PROJ_NAME}.*.osx-x64-bundled 2>/dev/null | head -1)
-        if [ -n "$X64_DIR" ]; then
-            FOLDER_NAME=$(basename "$X64_DIR")
-            if [[ $FOLDER_NAME =~ ${PROJ_NAME}\.([0-9]+\.[0-9]+\.[0-9]+)\.osx-x64-bundled ]]; then
-                VERSION="${BASH_REMATCH[1]}"
-                echo "📌 从 x64 目录提取版本号: $VERSION"
-            fi
-        fi
-    fi
-    if [ -z "$VERSION" ]; then
-        echo "⚠️ 无法从任何目录提取版本号，使用默认 1.0.0"
-        VERSION="1.0.0"
-    fi
-fi
+PROJECT_DIR_NAME="PDFMerger"   # 项目文件夹名（用于定位源代码和发布路径）
+APP_NAME="PDFMerger"              # 最终应用名称（用户看到的名称）
+BUNDLE_ID="com.leison.pdfmerger"  # Bundle ID 
 
 echo "📌 版本号: $VERSION"
 
-# 定义输出目录（Windows 发布目录）
-OUTPUT_DIR="/mnt/e/Develop_Vs2022/${PROJ_NAME}/publish"
+# ---------- 查找发布目录 ----------
+
+PUBLISH_BASE="./publish"
+if [ ! -d "$PUBLISH_BASE" ]; then
+    echo "❌ 发布目录不存在: $PUBLISH_BASE"
+    exit 1
+fi
+
+if ! ls "$PUBLISH_BASE"/${APP_NAME}.*.osx-*-bundled 1>/dev/null 2>&1; then
+    echo "❌ 未找到任何 osx-*-bundled 目录，请先运行 dotnet publish"
+    exit 1
+fi
+
+# ---------- 输出目录 ----------
+OUTPUT_DIR="./publish"
 mkdir -p "$OUTPUT_DIR"
 
-# 定义要打包的架构列表
+# ---------- 打包各架构 ----------
 ARCH_LIST=("arm64" "x64")
 
 for ARCH in "${ARCH_LIST[@]}"; do
@@ -78,15 +45,15 @@ for ARCH in "${ARCH_LIST[@]}"; do
     RID="osx-$ARCH"
 
     # 查找对应架构的 bundled 目录
-    BUNDLED_DIR=$(ls -td "$PUBLISH_BASE"/${PROJ_NAME}.*.${RID}-bundled 2>/dev/null | head -1)
+    BUNDLED_DIR=$(ls -td "$PUBLISH_BASE"/${APP_NAME}.*.${RID}-bundled 2>/dev/null | head -1)
     if [ -z "$BUNDLED_DIR" ]; then
         echo "⚠️ 未找到 $RID 发布目录，跳过..."
         continue
     fi
     echo "📁 使用发布目录: $BUNDLED_DIR"
 
-    # 创建临时工作目录（带架构后缀，避免冲突）
-    WORK_DIR="$HOME/develop/${PROJ_NAME}/tmp_mac_pack_$ARCH"
+    # 创建临时工作目录
+    WORK_DIR="$HOME/develop/${PROJECT_DIR_NAME}/tmp_mac_pack_$ARCH"
     rm -rf "$WORK_DIR"
     mkdir -p "$WORK_DIR"
 
@@ -156,11 +123,17 @@ EOF
     echo "📦 最终产物: $TAR_NAME"
 
     # 清理临时目录（可选）
-    # rm -rf "$WORK_DIR"
-    # echo "🧹 临时目录已清理"
+    #rm -rf "$WORK_DIR"
+    #echo "🧹 临时目录 $WORK_DIR 已清理"
+
+    # 清理原始目录
+    rm -rf "$BUNDLED_DIR"
+    echo "🧹 原始目录 $BUNDLED_DIR 已清理"
 done
 
 echo "=========================================="
 echo "🎉 所有架构打包完成！"
 echo "产物位置: $OUTPUT_DIR"
 ls -lh "$OUTPUT_DIR"/$APP_NAME.$VERSION.macos-*.app.tar.gz
+
+
